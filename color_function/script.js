@@ -41,13 +41,14 @@ var matrix_squares = [];
 var max_size = 0;
 var img
 var dataURL
+var img2
+var dataURL2
 
 const get_pixel_size = document.getElementById("pixel_size");
 get_pixel_size.addEventListener("change", change_pixel_size);
 var pixel_size = parseFloat(get_pixel_size.value);
 
-//Zooming
-var zooming;
+
 var clicked_released_xpos;
 var clicked_released_ypos;
 
@@ -60,7 +61,6 @@ class Square {
     this.lightness = lightness;
     this.pixel_size = pixel_size;
     this.tegn()
-
   }
 
   tegn() {
@@ -251,38 +251,29 @@ function change_pixel_size() {
   create_squares(size_lower, size_upper);
 }
 
-//FIXME: pixel_size creates a bug when changing size 
 function get_cursor_position(canvas, event) {
   const rect = canvas.getBoundingClientRect();
   size = (Math.abs(size_lower) + size_upper);
   var absolute_width_square = canvas.width / size;
   var absolute_heigth_square = canvas.height / size;
 
-  // size_lower = (get_size_lower.value)*pixel_size
-  // size_upper = (get_size_upper.value)*pixel_size
 
   if (event.type == "mousedown") {
-    
-    // size_lower = (get_size_lower.value)*pixel_size
-    // size_upper = (get_size_upper.value)*pixel_size
-    //Absoulut_width/height_square is the size of each pixel on the canvas.
 
     canvas.addEventListener("mousemove", zoom_guider);
 
-    zooming = true;
+
     //finds the absolute coordinates clicked
-    
     var down_x = ((event.clientX - rect.left) / absolute_width_square) + size_lower;
     var down_y = -(((event.clientY - rect.top) / absolute_width_square) + size_lower);
+    
     clicked_released_xpos = [down_x];
     clicked_released_ypos = [down_y];
   }
   
   else if (event.type == "mouseup") {
-    // size_lower = (get_size_lower.value)*pixel_size
-    // size_upper = (get_size_upper.value)*pixel_size
+
     canvas.removeEventListener("mousemove", zoom_guider);
-    zooming = false;
     
     var up_x = (event.clientX - rect.left) / absolute_width_square + size_lower;
     var up_y = -((event.clientY - rect.top) / absolute_heigth_square + size_lower);
@@ -295,10 +286,14 @@ function get_cursor_position(canvas, event) {
     clicked_released_ypos.sort(function (a, b) {return a - b;});
 
     var difference = Math.abs(size_lower) - Math.abs(size_upper);
-    if (event.ctrlKey) {
+    if (event.ctrlKey ) {
       tegnBrukXY(get_size_lower.value, get_size_upper.value, get_size_lower.value, get_size_upper.value);
-      ctx.drawImage(img, 0, 0, 600, 600);
-      return
+      ctx.drawImage(img2, 0, 0, 600, 600);
+      img = new Image();
+      dataURL = canvas.toDataURL();
+      img.src = dataURL;
+      // draw_squares()
+      return;
     }
 
     else{
@@ -306,14 +301,14 @@ function get_cursor_position(canvas, event) {
     }
 
     //TODO: No point in drawing everything of only a small part is shown,
-    //make it so that you can only draw complete squares with zoom_guider, and only draw and show the pixels "selected"
+    //!make it so that you can only draw complete squares with zoom_guider, and only draw and show the pixels "selected"
     draw_squares()
-    // create_squares(size_lower, size_upper);
+    tegnBrukXY(get_size_lower.value, get_size_upper.value, get_size_lower.value, get_size_upper.value);
+
   }
 }
 
 function zoom_guider() {
-  // tegnBrukBakgrunn("black");
   ctx.drawImage(img, 0, 0, 600, 600);
 
   const rect = canvas.getBoundingClientRect();
@@ -340,7 +335,6 @@ function zoom_guider() {
   );
 }
 
-//FIXME: bug when changing size for values not defined, ie. log(x) when x is negative
 
 function new_pixels(dimension_start_x, dimension_start_y, dimension_width, dimension_length) {
 
@@ -366,7 +360,9 @@ function new_pixels(dimension_start_x, dimension_start_y, dimension_width, dimen
       img = new Image();
       dataURL = canvas.toDataURL();
       img.src = dataURL;
-      // requestAnimationFrame(new_pixels)
+      img2 = new Image();
+      dataURL = canvas.toDataURL();
+      img2.src = dataURL;
       return
     }
 
@@ -388,13 +384,16 @@ function new_pixels(dimension_start_x, dimension_start_y, dimension_width, dimen
         );
       }
     }
-  // requestAnimationFrame(new_pixels)
 
   img = new Image();
   dataURL = canvas.toDataURL();
   img.src = dataURL;
-}
 
+  img2 = new Image();
+  dataURL = canvas.toDataURL();
+  img2.src = dataURL;
+}
+//FIXME: dont need to make new Image() everytime img is declared or whatever
 
 //------------------------------------------------------------------------------\\
 //!                               EXPLORE!
@@ -403,9 +402,9 @@ function new_pixels(dimension_start_x, dimension_start_y, dimension_width, dimen
 //math.js library is recommended
 //npm install mathjs
 
-// WITH SIZE 100 (and also try 1000?:)
 // Change color with these:
-//ALSO TRY TO USE Math.random() * expression. i.e => Math.random() * (X*Y)
+//
+//TRY TO USE Math.random() * expression. i.e => Math.random() * (X*Y)
 //
 // try X*Y
 // try X*n/Y
@@ -453,7 +452,7 @@ function new_pixels(dimension_start_x, dimension_start_y, dimension_width, dimen
 //try Math.acosh(abs(X*Y))*1000
 //try Math.atan(abs(X*Y))*100000
 //try Math.cbrt(abs(X*Y))*10
-//try !     Math.clz32(abs(X*Y))*100
+//try ! Math.clz32(abs(X*Y))*100
 //try Math.cos(X*Y)*100
 //try Math.sin(X*Y)*100
 //try Math.tan(X*Y)*100
@@ -462,8 +461,8 @@ function new_pixels(dimension_start_x, dimension_start_y, dimension_width, dimen
 //try Xy*X
 //try ((X+Y)**2) % ((X)**2)
 //try Math.min(X,((X)**2)/Y)
-//try !   Math.random() * (X - Y) + X
-//try !   Math.random() * (X*Y)
+//try ! Math.random() * (X - Y) + X
+//try ! Math.random() * (X*Y)
 //try ! Math.random() * (X+Y) and saturation Math.random() * ((abs(X)+abs(Y))) and hue Math.random() * ((abs(X)+abs(Y)))
 //try v2a([X,Y], [Y+Y,X*2])
 //try v2a([X,Y], [X,10])
@@ -527,6 +526,7 @@ function new_pixels(dimension_start_x, dimension_start_y, dimension_width, dimen
 //!TODO: Performance mode and fast mode, ise ctx.drawimage method for fast and redraw every pixel every time for fast mode.
 
 
+//TODO: make it possible to zoom in on inzoomed image.
 
 //TODO: Create option to make a variable that changes every second f.eks. goes from 1 to 10 then 10 to 1, call it n and then n can be
 // used in the color chooser
@@ -542,3 +542,4 @@ function new_pixels(dimension_start_x, dimension_start_y, dimension_width, dimen
 //* Maybe will have to, but make a "enhance" button, if the image is unclear, it should be possible to redraw every pixel
 //* It is probably faster/more efficient to just change color of all squares when changing color, instead of creating new squares
 //* Use same draw image method for zoom_outline
+//* Fix: pixel_size creates a bug when changing size 
