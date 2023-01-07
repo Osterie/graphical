@@ -3,8 +3,6 @@
 //window.onload = winInit
 //også Funskjoner sikkert
 
-
-
 const get_hue_expression = document.getElementById("hue_expression");
 const get_saturation_expression = document.getElementById("saturation_expression");
 const get_lightness_expression = document.getElementById("lightness_expression");
@@ -17,7 +15,6 @@ get_saturation_expression.addEventListener("change",  function(){hsl_loop(2)});
 get_lightness_expression.addEventListener("change",  function(){hsl_loop(3)});
 get_size_lower.addEventListener("change", change_size_lower);
 get_size_upper.addEventListener("change", change_size_upper);
-// get_upscale.addEventListener("click", function() {create_squares(size_lower, size_upper)})
 get_upscale.addEventListener("click", function() {draw_squares()})
 
 var canvas = elGetId("canvas");
@@ -81,15 +78,14 @@ class Square {
       this.ypos,
       this.pixel_size,
       this.pixel_size,
-      'hsl( ' +  this.hue + ', ' + this.saturation + '% ,' + this.lightness + '%)'
+      `hsl( ${this.hue} , ${this.saturation}% , ${this.lightness}%)`
       );
       // tegnTekst(`(${this.xpos}, ${this.ypos})` ,this.xpos, this.ypos, 'black', 0, 'left', 10, 'Calibri', 'bottom')
-      // tegnTekst('hwi' ,this.xpos, this.ypos, 'black', 0, 'left', 300, 'Calibri', 'bottom')
     }
 
   hue_changed(x, y) {
     var hue_expression = get_hue_expression.value.replace(/X/g, x).replace(/Y/g, y);
-    this.hue = Function('return ' + hue_expression)()
+    this.hue = Function(`return ${hue_expression}`)()
     this.tegn()
   }
 
@@ -173,7 +169,7 @@ function change_hue(x, y) {
     let returnme = get_hue_expression.value
     .replace(/X/g, x)
     .replace(/Y/g, y);
-    return Function('return ' + returnme)();
+    return Function(`return ${returnme}`)();
 
 }
 
@@ -520,16 +516,6 @@ function new_pixels(dimension_start_x, dimension_start_y, dimension_width, dimen
 // }
 //------------------END--------------------
 
-//TODO: To optimeze creation of matrix_squares do this:
-//Use local variables to store the values of dimension_start_x, dimension_start_y, dimension_width, and dimension_length inside the loop, rather than looking them up on each iteration. This can reduce the amount of property lookups and improve performance.
-
-//Pre-allocate the matrix_squares array with the appropriate size, rather than dynamically adding elements to the array as you go. This can reduce the number of array re-allocations and improve performance.
-
-//Consider using typed arrays, such as Float64Array, to store the data in the matrix_squares array. Typed arrays are faster and more memory-efficient than regular JavaScript arrays.
-
-// Use requestAnimationFrame to schedule the rendering of the matrix_squares array, rather than rendering it all at once. This can help to improve the performance of the rendering and make it more smooth.
-
-
 //TODO: Minor fix in the new_pixels function, it creates the corner piece twice
 
 //TODO: Research complex plotting or whatever, make an option to change to using complex numbers?
@@ -541,12 +527,13 @@ function new_pixels(dimension_start_x, dimension_start_y, dimension_width, dimen
 //!TODO: Performance mode and fast mode, ise ctx.drawimage method for fast and redraw every pixel every time for fast mode.
 
 
+
 //TODO: Create option to make a variable that changes every second f.eks. goes from 1 to 10 then 10 to 1, call it n and then n can be
 // used in the color chooser
 
 //TODO: Add more color models, i.e rgb and such
 
-
+//TODO: Make it possible to click a button, or hold down shift, or something, and then be able to hover a pixel, get the position and color(both see the color as a larger image and see the values for the color)?
 
 //*------------------------------------------------COMPLETED---------------------------------------
 //* Create variable for width and height of squares(or just size of squares), must change array size to compensate
