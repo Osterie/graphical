@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="no">
+    <head>
+
+		<meta charset="utf-8" />
+		<title>Grafisk fremstilling av temperaturer</title> 
+		<link   rel = "stylesheet" type="text/css" href="style.css" />
+
+		<script src=https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.3.0/math.min.js></script>
+
+
+	</head>
+	
+	<body>	
+
+		<center>
+			<p> skriv ett uttrykk med X og Y(KUN STORE) (kan bruke Math.sin(x) og diverse)</p>
+			<button id ='reset'> Reset Configs</button>
+			<button id = 'run'> Run </button>
+			<button id = 'settings'> Settings </button>
+			<!-- <input id = 'color_expression'type="text"   placeholder="Expression" value="X*Y"> -->
+			<!-- <input id = 'saturation_expression'type="text"   placeholder="Saturation" value="75" > -->
+			<!-- <input id = 'hue_expression'type="text"   placeholder="Hue" value="50" > -->
+			
+			<textarea id = 'color_expression' cols="40" rows="5">X*Y</textarea>
+			<textarea id = 'saturation_expression' placeholder="Saturation" cols="40" rows="5">100</textarea>
+			<textarea id = 'hue_expression' placeholder="Hue" cols="40" rows="5">50</textarea>
+			
+			<input id = 'pixel_size'type="text"   placeholder="Pixel Size" value="1">
+			<input id = 'size_lower' type = 'number' autofocus  placeholder="Size Lower" value = '-10'>
+			<input id = 'size_upper' type = 'number' autofocus  placeholder="Size Upper" value = '10'>
+			<!-- <input id = 'runspeed'type = 'number' placeholder="FPS (DONT USE YET)"> -->
+
+
+		<br>
+		<canvas 	id 	= "canvas" width= "600px" height = "600px" > </canvas> <br>
+		
+		</center>
+
+		<script src = "https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script> <!--For lagring av filer -->
+		<script src = "https://fulab.no/fulibs/fusionSDK.js" > </script> <!-- Python grensesnitt, tegnepakke osv -->
+		<script src = "https://fulab.no/skolemappe/faa-vgs/bibliotek/IT-2/teamtools.js" > </script>  <!--Eventuelt Fellesverktøy i faget --> 
+	
+		<script src = "script.js"> </script>
+    </body>
+
+	
+</html>

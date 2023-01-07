@@ -1,0 +1,61 @@
+body {
+	background-color: #222831;;
+}
+h1,h2{
+	color: blue;
+}
+
+div
+{
+	background-color: aliceblue;
+	border: 3px solid #F0D43A;
+	border-radius: 15px;
+}
+
+#canvas{
+	margin: 20px;
+	background-color: white;
+	cursor: crosshair;
+	border: solid 0px orange;
+	border-radius: 5px;
+}
+
+#canvas :last-child
+{
+	
+	position: absolute;
+	top: 200px;
+	left: 200px;
+
+}
+#meldinger {
+	border: solid 2px orange;
+	border-radius: 5px;
+}
+
+
+/* Just changing styles */
+
+button
+{
+  background-color: #F0D43A;
+  color: black;
+  font-weight: bold;
+  border: 1px solid white;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+button:hover
+{
+  background-color: red ;
+  background: yellow ;
+  transform: scale(1.2);
+}
+
+ button:active
+{
+	transform: scale(0.8);
+	background-color: red;
+}
+
