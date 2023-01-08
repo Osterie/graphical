@@ -3,12 +3,15 @@
 //window.onload = winInit
 //også Funskjoner sikkert
 
+//---------------------Accessing DOM elements------------------------
 const get_hue_expression = document.getElementById("hue_expression");
 const get_saturation_expression = document.getElementById("saturation_expression");
 const get_lightness_expression = document.getElementById("lightness_expression");
 const get_size_lower = document.getElementById("size_lower");
 const get_size_upper = document.getElementById("size_upper");
 const get_upscale = document.getElementById("upscale");
+const get_pixel_size = document.getElementById("pixel_size");
+
 
 get_hue_expression.addEventListener("change",  function(){hsl_loop(1)});
 get_saturation_expression.addEventListener("change",  function(){hsl_loop(2)});
@@ -16,25 +19,26 @@ get_lightness_expression.addEventListener("change",  function(){hsl_loop(3)});
 get_size_lower.addEventListener("change", change_size_lower);
 get_size_upper.addEventListener("change", change_size_upper);
 get_upscale.addEventListener("click", function() {draw_squares()})
+get_pixel_size.addEventListener("change", change_pixel_size);
 
+//-----------------------Canvas-----------------------------
 var canvas = elGetId("canvas");
 canvas.addEventListener("mousedown", function (e) {get_cursor_position(canvas, e);});
 canvas.addEventListener("mouseup", function (e) {get_cursor_position(canvas, e);});
 
 const ctx = canvas.getContext("2d", {alpha: false});
-// ctx.imageSmoothingQuality = "high"
 ctx.imageSmoothingEnabled = false
+// ctx.imageSmoothingQuality = "high"
 
-var animId;
 
+//----------------Creation of pixels--------------------------------
+var matrix_squares = [];
 var size_lower = -10;
 var size_upper = 10;
 var size = (Math.abs(size_lower) + size_upper)/pixel_size;
 
-var matrix_squares = [];
 
-//GUIDING BOX FOR RESIZE
-var max_size = 0;
+//-------------------------------GUIDING BOX FOR RESIZE--------------------
 var img
 img = new Image();
 var dataURL
@@ -42,8 +46,7 @@ var img2
 img2 = new Image();
 var dataURL2
 
-const get_pixel_size = document.getElementById("pixel_size");
-get_pixel_size.addEventListener("change", change_pixel_size);
+
 var pixel_size = parseFloat(get_pixel_size.value);
 
 
@@ -136,6 +139,8 @@ function hsl_loop(letter) {
   
   dataURL = canvas.toDataURL();
   img.src = dataURL;
+  img2.src = dataURL;
+
 
 }
 
@@ -145,9 +150,11 @@ function create_squares(start, end) {
 
 }
 
+//FIXME: when changing size lower and upper not drawing 
 function draw_squares() {
 
   // tegnBrukBakgrunn('black')
+
   for (let x = size_lower; x < size_upper; x++) {
     if (matrix_squares[x] == undefined) {
       matrix_squares[x] = new Array(dimension_length);
@@ -187,49 +194,53 @@ function change_lightness(x, y) {
     return  Math.abs(( (100 + Function(`return + ${returnme}`)()) % 200) - 100); 
 }
 
+//TODO: turn into 1 function... ?
+
 function change_size_upper() {
 
   var new_size = parseInt(get_size_upper.value);
+  tegnBrukXY(get_size_lower.value, get_size_upper.value, get_size_lower.value, get_size_upper.value);
 
-  if (new_size > size_upper) {
-    var old_size_upper = size_upper;
-    size_upper = new_size;
+  switch (true) {
+    case (new_size > size_upper):
 
-    if (new_size > max_size) {
-      max_size = new_size;
-      
+      var old_size_upper = size_upper;
+      size_upper = new_size;
       size = (Math.abs(size_lower) + size_upper)/pixel_size;
-      tegnBrukXY(get_size_lower.value, get_size_upper.value, get_size_lower.value, get_size_upper.value);
-
       ctx.drawImage(img, 0, ((600/size)*(new_size-old_size_upper)) , ((600/size)*(size-(new_size-old_size_upper))).toFixed(4), ((600/size)*(size-(new_size-old_size_upper))).toFixed(4));
-
       new_pixels(size_lower, old_size_upper, size_upper, size_upper)
+      break;
 
-    }
+    default:
+      size_upper = new_size;
+      draw_squares()
+      break;
   }
-  size_upper = new_size;
-
 }
 
 function change_size_lower() {
 
+  
   var new_size = parseInt(get_size_lower.value)/pixel_size;
+  tegnBrukXY(get_size_lower.value, get_size_upper.value, get_size_lower.value, get_size_upper.value);
 
-  if (new_size < size_lower) {
+  switch (true) {
+    case (new_size < size_lower):
+
     var old_size_lower = size_lower;
     size_lower = new_size;
 
-    if (new_size < max_size) {
-      max_size = new_size;
-      
-      size = (Math.abs(new_size) + size_upper);
-      tegnBrukXY(get_size_lower.value, get_size_upper.value, get_size_lower.value, get_size_upper.value);
+    size = (Math.abs(new_size) + size_upper);
 
-      ctx.drawImage(img, (600/size)*(old_size_lower-new_size), 0, ((600/size)*(size-(old_size_lower-new_size))).toFixed(4), ((600/size)*(size-(old_size_lower-new_size))).toFixed(4));
-      new_pixels(new_size, new_size, old_size_lower, size_upper)
-    }
+    ctx.drawImage(img, (600/size)*(old_size_lower-new_size), 0, ((600/size)*(size-(old_size_lower-new_size))).toFixed(4), ((600/size)*(size-(old_size_lower-new_size))).toFixed(4));
+    new_pixels(new_size, new_size, old_size_lower, size_upper)
+      break;
+
+    default:
+      size_lower = new_size;
+      draw_squares()
+      break;
   }
-  size_lower = new_size;
 }
 
 function change_pixel_size() {
@@ -340,7 +351,8 @@ function new_pixels(dimension_start_x, dimension_start_y, dimension_width, dimen
   //width is locally declared as dimension_width for improved performance by reducing amount of property lookups 
   for (let x = dimension_start_x, width = dimension_width; x < width; x++) {
     if (matrix_squares[x] == undefined) {
-      matrix_squares[x] = new Array(dimension_length);
+      console.log(dimension_length)
+      matrix_squares[x] = new Array(~~dimension_length);
     }
     
     for (let y = dimension_start_y, length = dimension_length; y < length; y++) {
@@ -355,11 +367,8 @@ function new_pixels(dimension_start_x, dimension_start_y, dimension_width, dimen
     }
   }
     if (dimension_start_x == dimension_start_y && dimension_width == dimension_length ) {
-      // img = new Image();
       dataURL = canvas.toDataURL();
       img.src = dataURL;
-      // img2 = new Image();
-      dataURL = canvas.toDataURL();
       img2.src = dataURL;
       return
     }
@@ -495,6 +504,8 @@ function new_pixels(dimension_start_x, dimension_start_y, dimension_width, dimen
 
 //------------------START--------------------
 //TO BE USED ANOTHER TIME?
+// var animId;
+
 // const get_runspeed = document.getElementById("runspeed");
 // get_runspeed.addEventListener("change", change_runspeed);
 // var runspeed = 1;

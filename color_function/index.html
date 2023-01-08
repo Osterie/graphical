@@ -14,19 +14,16 @@
 	<body>	
 
 		<center>
-			<p> skriv ett uttrykk med X og Y(KUN STORE) (kan bruke Math.sin(x) og diverse)</p>
+			<p> Write an expression with X and Y(only capitalized letters) (Can use Math.sin(X)*100 and such)</p>
 			<button id ='reset'> Reset Configs</button>
-			<!-- <input id = 'color_expression'type="text"   placeholder="Expression" value="X*Y"> -->
-			<!-- <input id = 'saturation_expression'type="text"   placeholder="Saturation" value="75" > -->
-			<!-- <input id = 'hue_expression'type="text"   placeholder="Hue" value="50" > -->
 			
 			<textarea id = 'hue_expression' cols="40" rows="5">X*Y</textarea>
 			<textarea id = 'saturation_expression' placeholder="Saturation" cols="40" rows="5">99</textarea>
 			<textarea id = 'lightness_expression' placeholder="Hue" cols="40" rows="5">50</textarea>
 			
 			<input id = 'pixel_size'type="text"   placeholder="Pixel Size" value="1">
-			<input id = 'size_lower' type = 'number' autofocus  placeholder="Size Lower" value = '-10'>
-			<input id = 'size_upper' type = 'number' autofocus  placeholder="Size Upper" value = '10'>
+			<input id = 'size_lower' type = 'number' placeholder="Size Lower" value = '-10' oninput="this.value = ~~(this.value);">
+			<input id = 'size_upper' type = 'number' placeholder="Size Upper" value = '10'  oninput="this.value = ~~(this.value);">
 			<button id = 'upscale'> upscale </button>
 			<!-- <input id = 'runspeed'type = 'number' placeholder="FPS (DONT USE YET)"> -->
 
