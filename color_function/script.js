@@ -21,7 +21,7 @@ var canvas = elGetId("canvas");
 canvas.addEventListener("mousedown", function (e) {get_cursor_position(canvas, e);});
 canvas.addEventListener("mouseup", function (e) {get_cursor_position(canvas, e);});
 
-const ctx = canvas.getContext("2d");
+const ctx = canvas.getContext("2d", {alpha: false});
 // ctx.imageSmoothingQuality = "high"
 ctx.imageSmoothingEnabled = false
 
@@ -31,17 +31,15 @@ var size_lower = -10;
 var size_upper = 10;
 var size = (Math.abs(size_lower) + size_upper)/pixel_size;
 
-var hue = get_hue_expression.value
-var saturation = get_saturation_expression.value
-var lightness = get_lightness_expression.value
-
 var matrix_squares = [];
 
 //GUIDING BOX FOR RESIZE
 var max_size = 0;
 var img
+img = new Image();
 var dataURL
 var img2
+img2 = new Image();
 var dataURL2
 
 const get_pixel_size = document.getElementById("pixel_size");
@@ -135,7 +133,7 @@ function hsl_loop(letter) {
     }
   }
 
-  img = new Image();
+  
   dataURL = canvas.toDataURL();
   img.src = dataURL;
 
@@ -149,7 +147,7 @@ function create_squares(start, end) {
 
 function draw_squares() {
 
-  tegnBrukBakgrunn('black')
+  // tegnBrukBakgrunn('black')
   for (let x = size_lower; x < size_upper; x++) {
     if (matrix_squares[x] == undefined) {
       matrix_squares[x] = new Array(dimension_length);
@@ -159,7 +157,7 @@ function draw_squares() {
       matrix_squares[x][y].tegn()
     }
   }
-  img = new Image();
+  // img = new Image();
   dataURL = canvas.toDataURL();
   img.src = dataURL;
 }
@@ -203,7 +201,7 @@ function change_size_upper() {
       size = (Math.abs(size_lower) + size_upper)/pixel_size;
       tegnBrukXY(get_size_lower.value, get_size_upper.value, get_size_lower.value, get_size_upper.value);
 
-      ctx.drawImage(img, 0, (600/size)*(new_size-old_size_upper) , ((600/size)*(size-(new_size-old_size_upper))).toFixed(4), ((600/size)*(size-(new_size-old_size_upper))).toFixed(4));
+      ctx.drawImage(img, 0, ((600/size)*(new_size-old_size_upper)) , ((600/size)*(size-(new_size-old_size_upper))).toFixed(4), ((600/size)*(size-(new_size-old_size_upper))).toFixed(4));
 
       new_pixels(size_lower, old_size_upper, size_upper, size_upper)
 
@@ -289,7 +287,7 @@ function get_cursor_position(canvas, event) {
     if (event.ctrlKey ) {
       tegnBrukXY(get_size_lower.value, get_size_upper.value, get_size_lower.value, get_size_upper.value);
       ctx.drawImage(img2, 0, 0, 600, 600);
-      img = new Image();
+      // img = new Image();
       dataURL = canvas.toDataURL();
       img.src = dataURL;
       // draw_squares()
@@ -357,10 +355,10 @@ function new_pixels(dimension_start_x, dimension_start_y, dimension_width, dimen
     }
   }
     if (dimension_start_x == dimension_start_y && dimension_width == dimension_length ) {
-      img = new Image();
+      // img = new Image();
       dataURL = canvas.toDataURL();
       img.src = dataURL;
-      img2 = new Image();
+      // img2 = new Image();
       dataURL = canvas.toDataURL();
       img2.src = dataURL;
       return
@@ -385,15 +383,14 @@ function new_pixels(dimension_start_x, dimension_start_y, dimension_width, dimen
       }
     }
 
-  img = new Image();
+  // img = new Image();
   dataURL = canvas.toDataURL();
   img.src = dataURL;
 
-  img2 = new Image();
+  // img2 = new Image();
   dataURL = canvas.toDataURL();
   img2.src = dataURL;
 }
-//FIXME: dont need to make new Image() everytime img is declared or whatever
 
 //------------------------------------------------------------------------------\\
 //!                               EXPLORE!
@@ -524,7 +521,7 @@ function new_pixels(dimension_start_x, dimension_start_y, dimension_width, dimen
 //TODO: Make an option to turn on the sawtooth pattern for hue too? and create lower and upper limit, this.hue =  Math.abs(( (100 + Function("return " + hue_expression)()) % 200) - 100)
 //!TODO: Create a option to toggle between clicking a button to run script and running script when a variable is changed.
 //!TODO: Performance mode and fast mode, ise ctx.drawimage method for fast and redraw every pixel every time for fast mode.
-
+//TODO: save settings in localstorage
 
 //TODO: make it possible to zoom in on inzoomed image.
 
@@ -543,3 +540,4 @@ function new_pixels(dimension_start_x, dimension_start_y, dimension_width, dimen
 //* It is probably faster/more efficient to just change color of all squares when changing color, instead of creating new squares
 //* Use same draw image method for zoom_outline
 //* Fix: pixel_size creates a bug when changing size 
+//* Fix: dont need to make new Image() everytime img is declared or whatever
