@@ -1,45 +1,44 @@
 <!DOCTYPE html>
 <html lang="no">
-    <head>
 
-		<meta charset="utf-8" />
-		<title>Grafisk fremstilling av temperaturer</title> 
-		<link   rel = "stylesheet" type="text/css" href="style.css" />
+<head>
 
-		<script src=https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.3.0/math.min.js></script>
+	<meta charset="utf-8" />
+	<title>Grafisk fremstilling av temperaturer</title>
+	<link rel="stylesheet" type="text/css" href="style.css" />
 
+	<script src=https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.3.0/math.min.js></script>
 
-	</head>
-	
-	<body>	
+</head>
 
-		<center>
-			<p> Write an expression with X and Y(only capitalized letters) (Can use Math.sin(X)*100 and such)</p>
-			<button id ='reset'> Reset Configs</button>
-			
-			<textarea id = 'hue_expression' cols="40" rows="5">X*Y</textarea>
-			<textarea id = 'saturation_expression' placeholder="Saturation" cols="40" rows="5">99</textarea>
-			<textarea id = 'lightness_expression' placeholder="Hue" cols="40" rows="5">50</textarea>
-			
-			<input id = 'pixel_size'type="text"   placeholder="Pixel Size" value="1">
-			<input id = 'size_lower' type = 'number' placeholder="Size Lower" value = '-10' oninput="this.value = ~~(this.value);">
-			<input id = 'size_upper' type = 'number' placeholder="Size Upper" value = '10'  oninput="this.value = ~~(this.value);">
-			<button id = 'upscale'> upscale </button>
-			<!-- <input id = 'runspeed'type = 'number' placeholder="FPS (DONT USE YET)"> -->
+<body>
 
+	<center>
+		<p> Write an expression with X and Y(only capitalized letters) (Can use Math.sin(X)*100 and such)</p>
+		<button id='reset'> Reset Configs</button>
+
+		<textarea id='hue_expression' cols="40" rows="5">X*Y</textarea>
+		<textarea id='saturation_expression' placeholder="Saturation" cols="40" rows="5">99</textarea>
+		<textarea id='lightness_expression' placeholder="Hue" cols="40" rows="5">50</textarea>
+
+		<input id='pixel_size' type="text" placeholder="Pixel Size" value="1">
+		<input id='size_lower' type='number' placeholder="Size Lower" value='-10'oninput="this.value = ~~(this.value);">
+		<input id='size_upper' type='number' placeholder="Size Upper" value='10' oninput="this.value = ~~(this.value);">
+		<button id='upscale'> upscale </button>
+		<!-- <input id = 'runspeed'type = 'number' placeholder="FPS (DONT USE YET)"> -->
 
 		<br>
-		<canvas 	id 	= "canvas" width= "600px" height = "600px" > </canvas> <br>
-		
-		</center>
+		<canvas id="canvas" width="600px" height="600px"> </canvas> <br>
+	</center>
 
-		<script src = "https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script> <!--For lagring av filer -->
-		<script src = "https://fulab.no/fulibs/fusionSDK.js" > </script> <!-- Python grensesnitt, tegnepakke osv -->
-		<script src = "https://fulab.no/skolemappe/faa-vgs/bibliotek/IT-2/teamtools.js" > </script>  <!--Eventuelt Fellesverktøy i faget --> 
-		<script src="./library/v2a.js"></script> <!-- Can convert vectors to angles (degress or radians) -->
+	<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script> For saving of files -->
+	<!-- <script src="https://fulab.no/skolemappe/faa-vgs/bibliotek/IT-2/teamtools.js"> </script> -->
+	<!-- <script src="https://fulab.no/fulibs/fusionSDK.js"> </script> -->
+	<!--  Fulab functions and such-->
 
-		<script src = "script.js"> </script>
-    </body>
+	<script src="./library/v2a.js"></script> <!-- Can convert vectors to angles (degress or radians) -->
+	<script src="script.js"> </script>
+</body>
 
-	
+
 </html>

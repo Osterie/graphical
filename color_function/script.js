@@ -22,7 +22,7 @@ get_upscale.addEventListener("click", function() {draw_squares()})
 get_pixel_size.addEventListener("change", change_pixel_size);
 
 //-----------------------Canvas-----------------------------
-var canvas = elGetId("canvas");
+var canvas = document.getElementById("canvas");
 canvas.addEventListener("mousedown", function (e) {get_cursor_position(canvas, e);});
 canvas.addEventListener("mouseup", function (e) {get_cursor_position(canvas, e);});
 
@@ -74,7 +74,14 @@ class Square {
         'hsl( 100, 100% , 0%)'
         );
         }
-    tegnFyltRektangel(
+    // tegnFyltRektangel(
+    //   this.xpos,
+    //   this.ypos,
+    //   this.pixel_size,
+    //   this.pixel_size,
+    //   `hsl( ${this.hue} , ${this.saturation}% , ${this.lightness}%)`
+    //   );
+    draw(
       this.xpos,
       this.ypos,
       this.pixel_size,
@@ -105,13 +112,52 @@ class Square {
 
 
 window.onload = winInit;
+function draw(x, y, heigth, width, color){
+  // console.log(world_coordinates)
+  // var absolute_width_square = canvas.width / size
+  // size_lower = -20
+  // size_upper = 20
+  size = (Math.abs(size_lower) + size_upper)
+  var absolute_width = (canvas.width/size)
+ 
+  ctx.fillStyle = color;
+  ctx.fillRect((x*absolute_width) + (canvas.width/2), (y*absolute_width) + (canvas.width/2), width*absolute_width, heigth*absolute_width);
+}
+
+// function xy_axes(x1, x2, y1, y2){
+//   var world_coordinates = []
+//   world_coordinates[0] = x1 
+//   world_coordinates[1] = x2 
+//   world_coordinates[2] = y1 
+//   world_coordinates[3] = y2 
+//   return world_coordinates
+// }
 
 function winInit() {
   // ctx.filter = "hue-rotate(200deg)" INTERESTING!
-  tegnBrukCanvas("canvas");
-  tegnBrukBakgrunn("black");
-  tegnBrukSynsfelt(0,1,0,1)
-  create_squares(size_lower, size_upper);
+
+  // xy_axes(-10, 10, -10, 10)
+  // size_lower = -20
+  // size_upper = 20
+  for (let i = size_lower; i < size_upper; i++) {
+    // draw(0+i*10,0+i*10, 20, 20, 'red')
+    // console.log(i)
+    draw(i, 0 , 1, 1, 'red')
+  }
+
+  // tegnFyltRektangel(
+  //   this.xpos,
+  //   this.ypos,
+  //   this.pixel_size, //heigth
+  //   this.pixel_size, //width
+  //   `hsl( ${this.hue} , ${this.saturation}% , ${this.lightness}%)`
+  //   );
+
+  // tegnBrukCanvas("canvas"); //!what does this do?
+
+  // tegnBrukBakgrunn("black");
+  // tegnBrukSynsfelt(0,1,0,1)
+  // create_squares(size_lower, size_upper);
 }
 
 function hsl_loop(letter) {
@@ -222,7 +268,7 @@ function change_size_lower() {
 
   
   var new_size = parseInt(get_size_lower.value)/pixel_size;
-  tegnBrukXY(get_size_lower.value, get_size_upper.value, get_size_lower.value, get_size_upper.value);
+  // tegnBrukXY(get_size_lower.value, get_size_upper.value, get_size_lower.value, get_size_upper.value);
 
   switch (true) {
     case (new_size < size_lower):
@@ -344,7 +390,6 @@ function zoom_guider() {
   );
 }
 
-
 function new_pixels(dimension_start_x, dimension_start_y, dimension_width, dimension_length) {
 
   //column
@@ -376,9 +421,11 @@ function new_pixels(dimension_start_x, dimension_start_y, dimension_width, dimen
   // row
   for (let x = dimension_start_y; x < dimension_length; x++) {
     if (matrix_squares[x] == undefined) {
-      matrix_squares[x] = new Array(dimension_width);
+      console.log(dimension_width, 'width')
+      matrix_squares[x] = new Array(~~Math.abs(dimension_width));
       console.log(matrix_squares[x])
     }
+
 
     for (let y = dimension_start_x; y < dimension_width; y++) {
       matrix_squares[x][y] = new Square(
@@ -522,6 +569,9 @@ function new_pixels(dimension_start_x, dimension_start_y, dimension_width, dimen
 //   }
 // }
 //------------------END--------------------
+
+//!HUGE TODO: create own functions and such instead of using fulabl libraries. 
+//! Functions to be made self include : tegnFyltRektangel, tegnfirkant, tegnBrukXY, tegnBrukBakgrunn, tegnBrukSynsfelt, tegnBrukCanvas
 
 //TODO: Minor fix in the new_pixels function, it creates the corner piece twice
 
