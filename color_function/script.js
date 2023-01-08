@@ -113,10 +113,7 @@ class Square {
 
 window.onload = winInit;
 function draw(x, y, heigth, width, color){
-  // console.log(world_coordinates)
-  // var absolute_width_square = canvas.width / size
-  // size_lower = -20
-  // size_upper = 20
+
   size = (Math.abs(size_lower) + size_upper)
   var absolute_width = (canvas.width/size)
  
@@ -266,7 +263,6 @@ function change_size_upper() {
 
 function change_size_lower() {
 
-  
   var new_size = parseInt(get_size_lower.value)/pixel_size;
   // tegnBrukXY(get_size_lower.value, get_size_upper.value, get_size_lower.value, get_size_upper.value);
 
@@ -280,7 +276,7 @@ function change_size_lower() {
 
     ctx.drawImage(img, (600/size)*(old_size_lower-new_size), 0, ((600/size)*(size-(old_size_lower-new_size))).toFixed(4), ((600/size)*(size-(old_size_lower-new_size))).toFixed(4));
     new_pixels(new_size, new_size, old_size_lower, size_upper)
-      break;
+    break;
 
     default:
       size_lower = new_size;
@@ -396,7 +392,7 @@ function new_pixels(dimension_start_x, dimension_start_y, dimension_width, dimen
   //width is locally declared as dimension_width for improved performance by reducing amount of property lookups 
   for (let x = dimension_start_x, width = dimension_width; x < width; x++) {
     if (matrix_squares[x] == undefined) {
-      console.log(dimension_length)
+      console.log(dimension_length, 'length')
       matrix_squares[x] = new Array(~~dimension_length);
     }
     
@@ -422,8 +418,7 @@ function new_pixels(dimension_start_x, dimension_start_y, dimension_width, dimen
   for (let x = dimension_start_y; x < dimension_length; x++) {
     if (matrix_squares[x] == undefined) {
       console.log(dimension_width, 'width')
-      matrix_squares[x] = new Array(~~Math.abs(dimension_width));
-      console.log(matrix_squares[x])
+      matrix_squares[x] = new Array(~~(dimension_width));
     }
 
 
