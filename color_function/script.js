@@ -33,8 +33,8 @@ ctx.imageSmoothingEnabled = false
 
 //----------------Creation of pixels--------------------------------
 var matrix_squares = [];
-var size_lower = -10;
-var size_upper = 10;
+var size_lower = +get_size_lower.value;
+var size_upper = +get_size_upper.value;
 var size = (Math.abs(size_lower) + size_upper)/pixel_size;
 
 
@@ -65,15 +65,15 @@ class Square {
   }
 
   tegn() {
-    if (!isFinite (this.hue)) {
-      tegnFyltRektangel(
-        this.xpos,
-        this.ypos,
-        this.pixel_size,
-        this.pixel_size,
-        'hsl( 100, 100% , 0%)'
-        );
-        }
+    // if (!isFinite (this.hue)) {
+    //   tegnFyltRektangel(
+    //     this.xpos,
+    //     this.ypos,
+    //     this.pixel_size,
+    //     this.pixel_size,
+    //     'hsl( 100, 100% , 0%)'
+    //     );
+    //     }
     // tegnFyltRektangel(
     //   this.xpos,
     //   this.ypos,
@@ -81,6 +81,8 @@ class Square {
     //   this.pixel_size,
     //   `hsl( ${this.hue} , ${this.saturation}% , ${this.lightness}%)`
     //   );
+    // draw(i, -10, 1, 1, `hsl(${i*20}, 100%, 50%)`)
+
     draw(
       this.xpos,
       this.ypos,
@@ -112,50 +114,57 @@ class Square {
 
 
 window.onload = winInit;
-function draw(x, y, heigth, width, color){
-
+function draw(x, y, width, heigth, color){
   size = (Math.abs(size_lower) + size_upper)
-  var absolute_width = (canvas.width/size)
- 
+  var absolute_width = (canvas.width/(size))
+  
+  // x + size_lower
+  // size_lower = -8
+  // size_upper = 5
+  // size = 10
+
+  // -8 er start, 0
+
+
   ctx.fillStyle = color;
-  ctx.fillRect((x*absolute_width) + (canvas.width/2), (y*absolute_width) + (canvas.width/2), width*absolute_width, heigth*absolute_width);
+  ctx.fillRect(((x-size_lower)*absolute_width)
+  , (((y-size_lower)*absolute_width)) + absolute_width
+  , (width*absolute_width)
+  , -(heigth*absolute_width));
+  // ctx.fillRect((x*absolute_width) + (canvas.width/2) 
+  // , (-(y*absolute_width) + (canvas.width/2)) 
+  // , (width*absolute_width)
+  // , -(heigth*absolute_width));
 }
 
-// function xy_axes(x1, x2, y1, y2){
-//   var world_coordinates = []
-//   world_coordinates[0] = x1 
-//   world_coordinates[1] = x2 
-//   world_coordinates[2] = y1 
-//   world_coordinates[3] = y2 
-//   return world_coordinates
-// }
-
 function winInit() {
-  // ctx.filter = "hue-rotate(200deg)" INTERESTING!
-
-  // xy_axes(-10, 10, -10, 10)
+  // ctx.filter = "hue-rotate(200deg)" INTERESTING!ø
+  // create_squares(size_lower, size_upper)
+  
+  new_pixels(size_lower, size_lower , size_upper, size_upper)
   // size_lower = -20
   // size_upper = 20
-  for (let i = size_lower; i < size_upper; i++) {
-    // draw(0+i*10,0+i*10, 20, 20, 'red')
-    // console.log(i)
-    draw(i, 0 , 1, 1, 'red')
-  }
 
+  // for (let i = -20; i <= 20; i++) {
+  //   draw(i, 5, 1, 1, `hsl(${i*20}, 100%, 50%)`)    
+  //   draw(i, -5, 1, 1, "red")    
+  // }
+  
   // tegnFyltRektangel(
-  //   this.xpos,
-  //   this.ypos,
-  //   this.pixel_size, //heigth
-  //   this.pixel_size, //width
-  //   `hsl( ${this.hue} , ${this.saturation}% , ${this.lightness}%)`
+    //   this.xpos,
+    //   this.ypos,
+    //   this.pixel_size, //heigth
+    //   this.pixel_size, //width
+    //   `hsl( ${this.hue} , ${this.saturation}% , ${this.lightness}%)`
   //   );
 
   // tegnBrukCanvas("canvas"); //!what does this do?
-
+  
   // tegnBrukBakgrunn("black");
   // tegnBrukSynsfelt(0,1,0,1)
   // create_squares(size_lower, size_upper);
 }
+
 
 function hsl_loop(letter) {
 
@@ -171,7 +180,7 @@ function hsl_loop(letter) {
     var letter_method = Square.prototype.lightness_changed;
   }
 
-  tegnBrukBakgrunn("black");
+  // tegnBrukBakgrunn("black");
 
   for (let x = size_lower; x < size_upper; x++) {
     for (let y = size_lower; y < size_upper; y++) {
@@ -198,12 +207,12 @@ function draw_squares() {
 
   // tegnBrukBakgrunn('black')
 
-  for (let x = size_lower; x < size_upper; x++) {
+  for (let x = size_lower; x <= size_upper; x++) {
     if (matrix_squares[x] == undefined) {
       matrix_squares[x] = new Array(dimension_length);
     }
     
-    for (let y = size_lower; y < size_upper; y++) {
+    for (let y = size_lower; y <= size_upper; y++) {
       matrix_squares[x][y].tegn()
     }
   }
@@ -242,7 +251,7 @@ function change_lightness(x, y) {
 function change_size_upper() {
 
   var new_size = parseInt(get_size_upper.value);
-  tegnBrukXY(get_size_lower.value, get_size_upper.value, get_size_lower.value, get_size_upper.value);
+  // tegnBrukXY(get_size_lower.value, get_size_upper.value, get_size_lower.value, get_size_upper.value);
 
   switch (true) {
     case (new_size > size_upper):
@@ -250,7 +259,9 @@ function change_size_upper() {
       var old_size_upper = size_upper;
       size_upper = new_size;
       size = (Math.abs(size_lower) + size_upper)/pixel_size;
-      ctx.drawImage(img, 0, ((600/size)*(new_size-old_size_upper)) , ((600/size)*(size-(new_size-old_size_upper))).toFixed(4), ((600/size)*(size-(new_size-old_size_upper))).toFixed(4));
+      
+      ctx.drawImage(img, 0, 0, ((600/size)*(size-(new_size-old_size_upper))).toFixed(4), ((600/size)*(size-(new_size-old_size_upper))).toFixed(4));
+        
       new_pixels(size_lower, old_size_upper, size_upper, size_upper)
       break;
 
@@ -264,7 +275,6 @@ function change_size_upper() {
 function change_size_lower() {
 
   var new_size = parseInt(get_size_lower.value)/pixel_size;
-  // tegnBrukXY(get_size_lower.value, get_size_upper.value, get_size_lower.value, get_size_upper.value);
 
   switch (true) {
     case (new_size < size_lower):
@@ -274,8 +284,10 @@ function change_size_lower() {
 
     size = (Math.abs(new_size) + size_upper);
 
-    ctx.drawImage(img, (600/size)*(old_size_lower-new_size), 0, ((600/size)*(size-(old_size_lower-new_size))).toFixed(4), ((600/size)*(size-(old_size_lower-new_size))).toFixed(4));
+    
+    ctx.drawImage(img, (600/size)*(new_size-old_size_lower), (600/size)*(new_size-old_size_lower), ((600/size)*(size-(new_size-old_size_lower))).toFixed(4), ((600/size)*(size-(new_size-old_size_lower))).toFixed(4));
     new_pixels(new_size, new_size, old_size_lower, size_upper)
+
     break;
 
     default:
@@ -387,12 +399,10 @@ function zoom_guider() {
 }
 
 function new_pixels(dimension_start_x, dimension_start_y, dimension_width, dimension_length) {
-
   //column
   //width is locally declared as dimension_width for improved performance by reducing amount of property lookups 
   for (let x = dimension_start_x, width = dimension_width; x < width; x++) {
     if (matrix_squares[x] == undefined) {
-      console.log(dimension_length, 'length')
       matrix_squares[x] = new Array(~~dimension_length);
     }
     
@@ -407,6 +417,7 @@ function new_pixels(dimension_start_x, dimension_start_y, dimension_width, dimen
         );
     }
   }
+
     if (dimension_start_x == dimension_start_y && dimension_width == dimension_length ) {
       dataURL = canvas.toDataURL();
       img.src = dataURL;
@@ -418,7 +429,8 @@ function new_pixels(dimension_start_x, dimension_start_y, dimension_width, dimen
   for (let x = dimension_start_y; x < dimension_length; x++) {
     if (matrix_squares[x] == undefined) {
       console.log(dimension_width, 'width')
-      matrix_squares[x] = new Array(~~(dimension_width));
+      matrix_squares[x] = [];
+      // matrix_squares[x] = new Array(~~(dimension_width));
     }
 
 
