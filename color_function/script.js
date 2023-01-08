@@ -377,8 +377,8 @@ function new_pixels(dimension_start_x, dimension_start_y, dimension_width, dimen
   // row
   for (let x = dimension_start_y; x < dimension_length; x++) {
     if (matrix_squares[x] == undefined) {
+      console.log(dimension_width, 'width')
       matrix_squares[x] = new Array(dimension_width);
-      console.log(matrix_squares[x])
     }
 
     for (let y = dimension_start_x; y < dimension_width; y++) {
