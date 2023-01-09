@@ -3,12 +3,15 @@
 //window.onload = winInit
 //også Funskjoner sikkert
 
+//---------------------Accessing DOM elements------------------------
 const get_hue_expression = document.getElementById("hue_expression");
 const get_saturation_expression = document.getElementById("saturation_expression");
 const get_lightness_expression = document.getElementById("lightness_expression");
 const get_size_lower = document.getElementById("size_lower");
 const get_size_upper = document.getElementById("size_upper");
 const get_upscale = document.getElementById("upscale");
+const get_pixel_size = document.getElementById("pixel_size");
+
 
 get_hue_expression.addEventListener("change",  function(){hsl_loop(1)});
 get_saturation_expression.addEventListener("change",  function(){hsl_loop(2)});
@@ -16,36 +19,34 @@ get_lightness_expression.addEventListener("change",  function(){hsl_loop(3)});
 get_size_lower.addEventListener("change", change_size_lower);
 get_size_upper.addEventListener("change", change_size_upper);
 get_upscale.addEventListener("click", function() {draw_squares()})
+get_pixel_size.addEventListener("change", change_pixel_size);
 
-var canvas = elGetId("canvas");
+//-----------------------Canvas-----------------------------
+var canvas = document.getElementById("canvas");
 canvas.addEventListener("mousedown", function (e) {get_cursor_position(canvas, e);});
 canvas.addEventListener("mouseup", function (e) {get_cursor_position(canvas, e);});
 
-const ctx = canvas.getContext("2d");
-// ctx.imageSmoothingQuality = "high"
+const ctx = canvas.getContext("2d", {alpha: false});
 ctx.imageSmoothingEnabled = false
+// ctx.imageSmoothingQuality = "high"
 
-var animId;
 
-var size_lower = -10;
-var size_upper = 10;
+//----------------Creation of pixels--------------------------------
+var matrix_squares = [];
+var size_lower = +get_size_lower.value;
+var size_upper = +get_size_upper.value;
 var size = (Math.abs(size_lower) + size_upper)/pixel_size;
 
-var hue = get_hue_expression.value
-var saturation = get_saturation_expression.value
-var lightness = get_lightness_expression.value
 
-var matrix_squares = [];
-
-//GUIDING BOX FOR RESIZE
-var max_size = 0;
+//-------------------------------GUIDING BOX FOR RESIZE--------------------
 var img
+img = new Image();
 var dataURL
 var img2
+img2 = new Image();
 var dataURL2
 
-const get_pixel_size = document.getElementById("pixel_size");
-get_pixel_size.addEventListener("change", change_pixel_size);
+
 var pixel_size = parseFloat(get_pixel_size.value);
 
 
@@ -64,22 +65,24 @@ class Square {
   }
 
   tegn() {
-    if (!isFinite (this.hue)) {
-      tegnFyltRektangel(
+    if (isFinite (this.hue)) {
+      draw(
         this.xpos,
         this.ypos,
         this.pixel_size,
         this.pixel_size,
-        'hsl( 100, 100% , 0%)'
+        `hsl( ${this.hue} , ${this.saturation}% , ${this.lightness}%)`
         );
-        }
-    tegnFyltRektangel(
-      this.xpos,
-      this.ypos,
-      this.pixel_size,
-      this.pixel_size,
-      `hsl( ${this.hue} , ${this.saturation}% , ${this.lightness}%)`
-      );
+      }
+      else{
+        draw(
+          this.xpos,
+          this.ypos,
+          this.pixel_size,
+          this.pixel_size,
+          `hsl(0, 0%, 0%)`
+          );
+      }
       // tegnTekst(`(${this.xpos}, ${this.ypos})` ,this.xpos, this.ypos, 'black', 0, 'left', 10, 'Calibri', 'bottom')
     }
 
@@ -104,14 +107,26 @@ class Square {
 
 
 window.onload = winInit;
+function draw(x, y, width, heigth, color){
+  //TODO: DO not have to declare everytime...
+  size = (Math.abs(size_lower) + size_upper)
+  var absolute_width = (canvas.width/(size))
+  
+  ctx.fillStyle = color;
+  ctx.fillRect(((x-size_lower)*absolute_width)
+  , (((y-size_lower)*absolute_width)) + absolute_width
+  , (width*absolute_width)
+  , -(heigth*absolute_width));
+}
 
 function winInit() {
   // ctx.filter = "hue-rotate(200deg)" INTERESTING!
-  tegnBrukCanvas("canvas");
-  tegnBrukBakgrunn("black");
-  tegnBrukSynsfelt(0,1,0,1)
-  create_squares(size_lower, size_upper);
+  console.log('draw ')
+  size = (Math.abs(size_lower) + size_upper)/pixel_size;
+  new_pixels(size_lower, size_lower , size_upper, size_upper)
+
 }
+
 
 function hsl_loop(letter) {
 
@@ -127,17 +142,14 @@ function hsl_loop(letter) {
     var letter_method = Square.prototype.lightness_changed;
   }
 
-  tegnBrukBakgrunn("black");
-
   for (let x = size_lower; x < size_upper; x++) {
     for (let y = size_lower; y < size_upper; y++) {
       letter_method.call(matrix_squares[x][y], (x*pixel_size) , (y*pixel_size) );
     }
   }
-
-  img = new Image();
   dataURL = canvas.toDataURL();
   img.src = dataURL;
+  img2.src = dataURL;
 
 }
 
@@ -149,7 +161,6 @@ function create_squares(start, end) {
 
 function draw_squares() {
 
-  tegnBrukBakgrunn('black')
   for (let x = size_lower; x < size_upper; x++) {
     if (matrix_squares[x] == undefined) {
       matrix_squares[x] = new Array(dimension_length);
@@ -159,22 +170,19 @@ function draw_squares() {
       matrix_squares[x][y].tegn()
     }
   }
-  img = new Image();
   dataURL = canvas.toDataURL();
   img.src = dataURL;
 }
 
 function change_hue(x, y) {
-
     let returnme = get_hue_expression.value
-    .replace(/X/g, x)
-    .replace(/Y/g, y);
+      .replace(/X/g, x)
+      .replace(/Y/g, y);
     return Function(`return ${returnme}`)();
 
 }
 
 function change_saturation(x, y) {
-
     let returnme = get_saturation_expression.value
       .replace(/X/g, x)
       .replace(/Y/g, y);
@@ -184,54 +192,57 @@ function change_saturation(x, y) {
 function change_lightness(x, y) {
 
     let returnme = get_lightness_expression.value
-    .replace(/X/g, x)
-    .replace(/Y/g, y);
+      .replace(/X/g, x)
+      .replace(/Y/g, y);
     return  Math.abs(( (100 + Function(`return + ${returnme}`)()) % 200) - 100); 
 }
+
+//TODO: turn into 1 function... ?
 
 function change_size_upper() {
 
   var new_size = parseInt(get_size_upper.value);
 
-  if (new_size > size_upper) {
-    var old_size_upper = size_upper;
-    size_upper = new_size;
+  switch (true) {
+    case (new_size > size_upper):
 
-    if (new_size > max_size) {
-      max_size = new_size;
-      
+      var old_size_upper = size_upper;
+      size_upper = new_size;
       size = (Math.abs(size_lower) + size_upper)/pixel_size;
-      tegnBrukXY(get_size_lower.value, get_size_upper.value, get_size_lower.value, get_size_upper.value);
-
-      ctx.drawImage(img, 0, (600/size)*(new_size-old_size_upper) , ((600/size)*(size-(new_size-old_size_upper))).toFixed(4), ((600/size)*(size-(new_size-old_size_upper))).toFixed(4));
-
+      
+      ctx.drawImage(img, 0, 0, ((600/size)*(size-(new_size-old_size_upper))).toFixed(4), ((600/size)*(size-(new_size-old_size_upper))).toFixed(4));
+        
       new_pixels(size_lower, old_size_upper, size_upper, size_upper)
+      break;
 
-    }
+    default:
+      size_upper = new_size;
+      draw_squares()
+      break;
   }
-  size_upper = new_size;
-
 }
 
 function change_size_lower() {
 
   var new_size = parseInt(get_size_lower.value)/pixel_size;
 
-  if (new_size < size_lower) {
+  switch (true) {
+    case (new_size < size_lower):
+
     var old_size_lower = size_lower;
     size_lower = new_size;
 
-    if (new_size < max_size) {
-      max_size = new_size;
-      
-      size = (Math.abs(new_size) + size_upper);
-      tegnBrukXY(get_size_lower.value, get_size_upper.value, get_size_lower.value, get_size_upper.value);
+    size = (Math.abs(new_size) + size_upper);
+    ctx.drawImage(img, (600/size)*(old_size_lower-new_size), (600/size)*(old_size_lower-new_size), ((600/size)*(size-(old_size_lower-new_size))).toFixed(4), ((600/size)*(size-(old_size_lower-new_size))).toFixed(4));
+    new_pixels(new_size, new_size, old_size_lower, size_upper)
 
-      ctx.drawImage(img, (600/size)*(old_size_lower-new_size), 0, ((600/size)*(size-(old_size_lower-new_size))).toFixed(4), ((600/size)*(size-(old_size_lower-new_size))).toFixed(4));
-      new_pixels(new_size, new_size, old_size_lower, size_upper)
-    }
+    break;
+
+    default:
+      size_lower = new_size;
+      draw_squares()
+      break;
   }
-  size_lower = new_size;
 }
 
 function change_pixel_size() {
@@ -262,7 +273,6 @@ function get_cursor_position(canvas, event) {
 
     canvas.addEventListener("mousemove", zoom_guider);
 
-
     //finds the absolute coordinates clicked
     var down_x = ((event.clientX - rect.left) / absolute_width_square) + size_lower;
     var down_y = -(((event.clientY - rect.top) / absolute_width_square) + size_lower);
@@ -289,10 +299,8 @@ function get_cursor_position(canvas, event) {
     if (event.ctrlKey ) {
       tegnBrukXY(get_size_lower.value, get_size_upper.value, get_size_lower.value, get_size_upper.value);
       ctx.drawImage(img2, 0, 0, 600, 600);
-      img = new Image();
       dataURL = canvas.toDataURL();
       img.src = dataURL;
-      // draw_squares()
       return;
     }
 
@@ -307,6 +315,7 @@ function get_cursor_position(canvas, event) {
 
   }
 }
+
 
 function zoom_guider() {
   ctx.drawImage(img, 0, 0, 600, 600);
@@ -335,14 +344,12 @@ function zoom_guider() {
   );
 }
 
-
 function new_pixels(dimension_start_x, dimension_start_y, dimension_width, dimension_length) {
-
   //column
   //width is locally declared as dimension_width for improved performance by reducing amount of property lookups 
   for (let x = dimension_start_x, width = dimension_width; x < width; x++) {
     if (matrix_squares[x] == undefined) {
-      matrix_squares[x] = new Array(dimension_length);
+      matrix_squares[x] = new Array(~~dimension_length);
     }
     
     for (let y = dimension_start_y, length = dimension_length; y < length; y++) {
@@ -356,12 +363,10 @@ function new_pixels(dimension_start_x, dimension_start_y, dimension_width, dimen
         );
     }
   }
+
     if (dimension_start_x == dimension_start_y && dimension_width == dimension_length ) {
-      img = new Image();
       dataURL = canvas.toDataURL();
       img.src = dataURL;
-      img2 = new Image();
-      dataURL = canvas.toDataURL();
       img2.src = dataURL;
       return
     }
@@ -369,9 +374,10 @@ function new_pixels(dimension_start_x, dimension_start_y, dimension_width, dimen
   // row
   for (let x = dimension_start_y; x < dimension_length; x++) {
     if (matrix_squares[x] == undefined) {
-      console.log(dimension_width, 'width')
-      matrix_squares[x] = new Array(dimension_width);
+      matrix_squares[x] = [];
+      // matrix_squares[x] = new Array(~~(dimension_width));
     }
+
 
     for (let y = dimension_start_x; y < dimension_width; y++) {
       matrix_squares[x][y] = new Square(
@@ -385,15 +391,14 @@ function new_pixels(dimension_start_x, dimension_start_y, dimension_width, dimen
       }
     }
 
-  img = new Image();
+  // img = new Image();
   dataURL = canvas.toDataURL();
   img.src = dataURL;
 
-  img2 = new Image();
+  // img2 = new Image();
   dataURL = canvas.toDataURL();
   img2.src = dataURL;
 }
-//FIXME: dont need to make new Image() everytime img is declared or whatever
 
 //------------------------------------------------------------------------------\\
 //!                               EXPLORE!
@@ -498,6 +503,8 @@ function new_pixels(dimension_start_x, dimension_start_y, dimension_width, dimen
 
 //------------------START--------------------
 //TO BE USED ANOTHER TIME?
+// var animId;
+
 // const get_runspeed = document.getElementById("runspeed");
 // get_runspeed.addEventListener("change", change_runspeed);
 // var runspeed = 1;
@@ -515,6 +522,9 @@ function new_pixels(dimension_start_x, dimension_start_y, dimension_width, dimen
 // }
 //------------------END--------------------
 
+//!HUGE TODO: create own functions and such instead of using fulabl libraries. 
+//! Functions to be made self include : tegnFyltRektangel, tegnfirkant, tegnBrukXY, tegnBrukBakgrunn, tegnBrukSynsfelt, tegnBrukCanvas
+
 //TODO: Minor fix in the new_pixels function, it creates the corner piece twice
 
 //TODO: Research complex plotting or whatever, make an option to change to using complex numbers?
@@ -524,12 +534,15 @@ function new_pixels(dimension_start_x, dimension_start_y, dimension_width, dimen
 //TODO: Make an option to turn on the sawtooth pattern for hue too? and create lower and upper limit, this.hue =  Math.abs(( (100 + Function("return " + hue_expression)()) % 200) - 100)
 //!TODO: Create a option to toggle between clicking a button to run script and running script when a variable is changed.
 //!TODO: Performance mode and fast mode, ise ctx.drawimage method for fast and redraw every pixel every time for fast mode.
-
+//TODO: save settings in localstorage
 
 //TODO: make it possible to zoom in on inzoomed image.
 
 //TODO: Create option to make a variable that changes every second f.eks. goes from 1 to 10 then 10 to 1, call it n and then n can be
 // used in the color chooser
+
+//TODO: when changing size, the direction of which the new image is drawn in is wrong.. 
+
 
 //TODO: Add more color models, i.e rgb and such
 
@@ -543,3 +556,4 @@ function new_pixels(dimension_start_x, dimension_start_y, dimension_width, dimen
 //* It is probably faster/more efficient to just change color of all squares when changing color, instead of creating new squares
 //* Use same draw image method for zoom_outline
 //* Fix: pixel_size creates a bug when changing size 
+//* Fix: dont need to make new Image() everytime img is declared or whatever
