@@ -161,12 +161,12 @@ function create_squares(start, end) {
 
 function draw_squares() {
 
-  for (let x = size_lower; x <= size_upper; x++) {
+  for (let x = size_lower; x < size_upper; x++) {
     if (matrix_squares[x] == undefined) {
       matrix_squares[x] = new Array(dimension_length);
     }
     
-    for (let y = size_lower; y <= size_upper; y++) {
+    for (let y = size_lower; y < size_upper; y++) {
       matrix_squares[x][y].tegn()
     }
   }
@@ -315,6 +315,7 @@ function get_cursor_position(canvas, event) {
 
   }
 }
+
 
 function zoom_guider() {
   ctx.drawImage(img, 0, 0, 600, 600);
@@ -539,6 +540,9 @@ function new_pixels(dimension_start_x, dimension_start_y, dimension_width, dimen
 
 //TODO: Create option to make a variable that changes every second f.eks. goes from 1 to 10 then 10 to 1, call it n and then n can be
 // used in the color chooser
+
+//TODO: when changing size, the direction of which the new image is drawn in is wrong.. 
+
 
 //TODO: Add more color models, i.e rgb and such
 
