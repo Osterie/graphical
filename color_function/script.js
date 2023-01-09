@@ -108,6 +108,7 @@ class Square {
 
 window.onload = winInit;
 function draw(x, y, width, heigth, color){
+
   //TODO: DO not have to declare everytime...
   size = (Math.abs(size_lower) + size_upper)
   var absolute_width = (canvas.width/(size))
@@ -121,7 +122,6 @@ function draw(x, y, width, heigth, color){
 
 function winInit() {
   // ctx.filter = "hue-rotate(200deg)" INTERESTING!
-  console.log('draw ')
   size = (Math.abs(size_lower) + size_upper)/pixel_size;
   new_pixels(size_lower, size_lower , size_upper, size_upper)
 
@@ -265,6 +265,7 @@ function change_pixel_size() {
 function get_cursor_position(canvas, event) {
   const rect = canvas.getBoundingClientRect();
   size = (Math.abs(size_lower) + size_upper);
+
   var absolute_width_square = canvas.width / size;
   var absolute_heigth_square = canvas.height / size;
 
@@ -274,9 +275,9 @@ function get_cursor_position(canvas, event) {
     canvas.addEventListener("mousemove", zoom_guider);
 
     //finds the absolute coordinates clicked
-    var down_x = ((event.clientX - rect.left) / absolute_width_square) + size_lower;
-    var down_y = -(((event.clientY - rect.top) / absolute_width_square) + size_lower);
-    
+    var down_x = ((event.offsetX));
+    var down_y = (((event.offsetY)));
+
     clicked_released_xpos = [down_x];
     clicked_released_ypos = [down_y];
   }
@@ -285,8 +286,8 @@ function get_cursor_position(canvas, event) {
 
     canvas.removeEventListener("mousemove", zoom_guider);
     
-    var up_x = (event.clientX - rect.left) / absolute_width_square + size_lower;
-    var up_y = -((event.clientY - rect.top) / absolute_heigth_square + size_lower);
+    var up_x = (event.clientX - rect.left);
+    var up_y = -((event.clientY - rect.top));
 
     clicked_released_xpos[1] = up_x;
     clicked_released_ypos[1] = up_y;
@@ -297,7 +298,7 @@ function get_cursor_position(canvas, event) {
 
     var difference = Math.abs(size_lower) - Math.abs(size_upper);
     if (event.ctrlKey ) {
-      tegnBrukXY(get_size_lower.value, get_size_upper.value, get_size_lower.value, get_size_upper.value);
+      // tegnBrukXY(get_size_lower.value, get_size_upper.value, get_size_lower.value, get_size_upper.value);
       ctx.drawImage(img2, 0, 0, 600, 600);
       dataURL = canvas.toDataURL();
       img.src = dataURL;
@@ -305,13 +306,13 @@ function get_cursor_position(canvas, event) {
     }
 
     else{
-      tegnBrukXY(clicked_released_xpos[0]*pixel_size, clicked_released_xpos[1]*pixel_size, (clicked_released_ypos[0] - difference)*pixel_size, (clicked_released_ypos[1] - difference)*pixel_size);
+      // tegnBrukXY(clicked_released_xpos[0]*pixel_size, clicked_released_xpos[1]*pixel_size, (clicked_released_ypos[0] - difference)*pixel_size, (clicked_released_ypos[1] - difference)*pixel_size);
     }
 
     //TODO: No point in drawing everything of only a small part is shown,
     //!make it so that you can only draw complete squares with zoom_guider, and only draw and show the pixels "selected"
     draw_squares()
-    tegnBrukXY(get_size_lower.value, get_size_upper.value, get_size_lower.value, get_size_upper.value);
+    // tegnBrukXY(get_size_lower.value, get_size_upper.value, get_size_lower.value, get_size_upper.value);
 
   }
 }
@@ -325,23 +326,73 @@ function zoom_guider() {
   var absolute_width_square = canvas.width / size;
   var absolute_heigth_square = canvas.height / size;
   
-  current_x = 
-  (event.clientX - rect.left) / absolute_width_square + size_lower;
-  current_y =
-    -((event.clientY - rect.top) / absolute_heigth_square + size_lower);
+  current_x = (event.offsetX);
+  current_y = ((event.offsetY));
 
   var difference = Math.abs(size_lower) - Math.abs(size_upper);
   clicked_released_xpos[1] = current_x;
   clicked_released_ypos[1] = current_y;
+  // console.log({current_x})
+  ctx.beginPath();
+  // ctx.rect(20, 20, 150, 100);
+  
+  
+  var subtract
+  
+  //Positive values down, negative values up.
+  var height
 
-  tegnFirkant(
-    (clicked_released_xpos[0]*pixel_size),
-    ((clicked_released_ypos[0] - difference)*pixel_size),
-    current_x*pixel_size,
-    ((current_y - difference)*pixel_size),
-    "blue",
-    false
-  );
+  //positive values to the right, negative to the left.
+  var width
+
+  //checks where current x and y pos are in relation to down_x and down_y
+  
+  var right = false
+  var above = false
+
+  if (current_x - clicked_released_xpos[0] > 0){
+    right = true
+  } 
+
+  if (current_y - clicked_released_ypos[0] < 0) {
+    above = true
+  }
+  
+  if (right && above || !right &&  !above){
+    if (Math.abs(current_x - clicked_released_xpos[0]) > Math.abs(current_y - clicked_released_ypos[0]) ){
+        width = current_x - clicked_released_xpos[0]
+        height =  -(current_x - clicked_released_xpos[0])  
+      }
+  
+      else{
+        subtract = clicked_released_ypos[0]
+        width = -(current_y - subtract)
+        height = current_y - subtract
+  
+      }
+  }
+
+  else if (right && !above  || !right && above){
+    if (Math.abs(current_x - clicked_released_xpos[0]) > Math.abs(current_y - clicked_released_ypos[0])){
+      width = current_x - clicked_released_xpos[0]
+      height = current_x - clicked_released_xpos[0]
+    }
+
+    else{
+      width = current_y - clicked_released_ypos[0]
+      height = current_y - clicked_released_ypos[0]
+    }
+  }
+    
+  ctx.rect((clicked_released_xpos[0]),
+  ((clicked_released_ypos[0])),
+  width,
+  (height));
+
+
+  
+  ctx.stroke();
+  
 }
 
 function new_pixels(dimension_start_x, dimension_start_y, dimension_width, dimension_length) {
