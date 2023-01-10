@@ -18,7 +18,7 @@ get_saturation_expression.addEventListener("change",  function(){hsl_loop(2)});
 get_lightness_expression.addEventListener("change",  function(){hsl_loop(3)});
 get_size_lower.addEventListener("change", change_size_lower);
 get_size_upper.addEventListener("change", change_size_upper);
-get_upscale.addEventListener("click", function() {draw_squares()})
+get_upscale.addEventListener("click", function() {draw_squares(size_lower, size_lower, size_upper, size_upper)})
 get_pixel_size.addEventListener("change", change_pixel_size);
 
 //-----------------------Canvas-----------------------------
@@ -71,7 +71,8 @@ class Square {
         this.ypos,
         this.pixel_size,
         this.pixel_size,
-        `hsl( ${this.hue} , ${this.saturation}% , ${this.lightness}%)`
+        `hsl( ${this.hue} , ${this.saturation}% , ${this.lightness}%)`,
+        size_lower
         );
       }
       else{
@@ -80,7 +81,8 @@ class Square {
           this.ypos,
           this.pixel_size,
           this.pixel_size,
-          `hsl(0, 0%, 0%)`
+          `hsl(0, 0%, 0%)`,
+          size_lower
           );
       }
       // tegnTekst(`(${this.xpos}, ${this.ypos})` ,this.xpos, this.ypos, 'black', 0, 'left', 10, 'Calibri', 'bottom')
@@ -106,22 +108,27 @@ class Square {
 }
 
 
+//TODO: DO not have to declare everytime...
 window.onload = winInit;
-function draw(x, y, width, heigth, color){
-  //TODO: DO not have to declare everytime...
-  size = (Math.abs(size_lower) + size_upper)
+function draw(x, y, width, heigth, color, start){
+  console.log((x-start))
   var absolute_width = (canvas.width/(size))
+  // size = (Math.abs(start) + size_upper)
   
+
+  absolute_width = (canvas.width/(size))
+
+
+
   ctx.fillStyle = color;
-  ctx.fillRect(((x-size_lower)*absolute_width)
-  , (((y-size_lower)*absolute_width)) + absolute_width
+  ctx.fillRect(((x-start)*absolute_width)
+  , (((y-start)*absolute_width)) + absolute_width
   , (width*absolute_width)
   , -(heigth*absolute_width));
 }
 
 function winInit() {
   // ctx.filter = "hue-rotate(200deg)" INTERESTING!
-  console.log('draw ')
   size = (Math.abs(size_lower) + size_upper)/pixel_size;
   new_pixels(size_lower, size_lower , size_upper, size_upper)
 
@@ -159,19 +166,13 @@ function create_squares(start, end) {
 
 }
 
-function draw_squares() {
+function  draw_squares(dimension_start_x, dimension_end_x, dimension_start_y,  dimension_end_y) {
 
-  for (let x = size_lower; x < size_upper; x++) {
-    if (matrix_squares[x] == undefined) {
-      matrix_squares[x] = new Array(dimension_length);
-    }
-    
-    for (let y = size_lower; y < size_upper; y++) {
+  for (let x = dimension_start_x, width = dimension_end_x; x < width; x++) {
+    for (let y = dimension_start_y, length = dimension_end_y; y < length; y++) {
       matrix_squares[x][y].tegn()
     }
   }
-  dataURL = canvas.toDataURL();
-  img.src = dataURL;
 }
 
 function change_hue(x, y) {
@@ -217,7 +218,7 @@ function change_size_upper() {
 
     default:
       size_upper = new_size;
-      draw_squares()
+      draw_squares(size_lower, size_lower, size_upper, size_upper)
       break;
   }
 }
@@ -240,7 +241,7 @@ function change_size_lower() {
 
     default:
       size_lower = new_size;
-      draw_squares()
+      draw_squares(size_lower, size_lower, size_upper, size_upper)
       break;
   }
 }
@@ -265,18 +266,18 @@ function change_pixel_size() {
 function get_cursor_position(canvas, event) {
   const rect = canvas.getBoundingClientRect();
   size = (Math.abs(size_lower) + size_upper);
+
   var absolute_width_square = canvas.width / size;
   var absolute_heigth_square = canvas.height / size;
-
 
   if (event.type == "mousedown") {
 
     canvas.addEventListener("mousemove", zoom_guider);
 
     //finds the absolute coordinates clicked
-    var down_x = ((event.clientX - rect.left) / absolute_width_square) + size_lower;
-    var down_y = -(((event.clientY - rect.top) / absolute_width_square) + size_lower);
-    
+    var down_x = ((event.offsetX));
+    var down_y = (((event.offsetY)));
+
     clicked_released_xpos = [down_x];
     clicked_released_ypos = [down_y];
   }
@@ -285,19 +286,25 @@ function get_cursor_position(canvas, event) {
 
     canvas.removeEventListener("mousemove", zoom_guider);
     
-    var up_x = (event.clientX - rect.left) / absolute_width_square + size_lower;
-    var up_y = -((event.clientY - rect.top) / absolute_heigth_square + size_lower);
+    // var up_x = (event.offsetX);
+    // var up_y = (event.offsetY);
 
-    clicked_released_xpos[1] = up_x;
-    clicked_released_ypos[1] = up_y;
+    // clicked_released_xpos[1] = up_x;
+    // clicked_released_ypos[1] = up_y;
+    
+
+    // console.log(clicked_released_xpos)
+    // console.log(clicked_released_ypos)
+    // console.log( ~~(clicked_released_xpos[0]/absolute_width_square) + size_lower, ~~(clicked_released_xpos[1]/absolute_width_square) + size_lower, 'x')
+    // console.log( -(~~(clicked_released_ypos[0]/absolute_width_square) + size_lower), -(~~(clicked_released_ypos[1]/absolute_width_square) + size_lower), 'yyyyyyyy')
+
 
     //sorts from lowest to highest
-    clicked_released_xpos.sort(function (a, b) {return a - b;});
-    clicked_released_ypos.sort(function (a, b) {return a - b;});
 
-    var difference = Math.abs(size_lower) - Math.abs(size_upper);
-    if (event.ctrlKey ) {
-      tegnBrukXY(get_size_lower.value, get_size_upper.value, get_size_lower.value, get_size_upper.value);
+    // var difference = Math.abs(size_lower) - Math.abs(size_upper);
+    
+     if (event.ctrlKey ) {
+      // tegnBrukXY(get_size_lower.value, get_size_upper.value, get_size_lower.value, get_size_upper.value);
       ctx.drawImage(img2, 0, 0, 600, 600);
       dataURL = canvas.toDataURL();
       img.src = dataURL;
@@ -305,19 +312,44 @@ function get_cursor_position(canvas, event) {
     }
 
     else{
-      tegnBrukXY(clicked_released_xpos[0]*pixel_size, clicked_released_xpos[1]*pixel_size, (clicked_released_ypos[0] - difference)*pixel_size, (clicked_released_ypos[1] - difference)*pixel_size);
+
+        clicked_released_xpos.sort(function (a, b) {return a - b;});
+        clicked_released_ypos.sort(function (a, b) {return a - b;});
+  
+
+      var start_x = ~~(clicked_released_xpos[0]/absolute_width_square) + size_lower
+      var end_x = ~~(clicked_released_xpos[1]/absolute_width_square) + size_lower
+      
+      var start_y = ~~(clicked_released_ypos[0]/absolute_width_square) + size_lower
+      var end_y =  ~~(clicked_released_ypos[1]/absolute_width_square) + size_lower
+      // var end_y =  - start_x - end_x + size_lower
+
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);  
+      size = (end_x) - (start_x) + 1 
+      
+
+      if (end_x - start_x > end_y - start_y ){
+        start_y -= 1
+      }
+      else if (end_x - start_x < end_y - start_y ){
+          start_x -= 1
+       }
+
+
+       console.log(size, start_x, end_x+1, 'supppp')
+       
+      draw_squares(start_x, end_x+1, start_y, end_y+1)
     }
 
     //TODO: No point in drawing everything of only a small part is shown,
     //!make it so that you can only draw complete squares with zoom_guider, and only draw and show the pixels "selected"
-    draw_squares()
-    tegnBrukXY(get_size_lower.value, get_size_upper.value, get_size_lower.value, get_size_upper.value);
-
+    
   }
 }
 
-
 function zoom_guider() {
+
   ctx.drawImage(img, 0, 0, 600, 600);
 
   const rect = canvas.getBoundingClientRect();
@@ -325,23 +357,95 @@ function zoom_guider() {
   var absolute_width_square = canvas.width / size;
   var absolute_heigth_square = canvas.height / size;
   
-  current_x = 
-  (event.clientX - rect.left) / absolute_width_square + size_lower;
-  current_y =
-    -((event.clientY - rect.top) / absolute_heigth_square + size_lower);
+  current_x = (event.offsetX);
+  current_y = ((event.offsetY));
 
   var difference = Math.abs(size_lower) - Math.abs(size_upper);
   clicked_released_xpos[1] = current_x;
   clicked_released_ypos[1] = current_y;
+  // console.log({current_x})
+  ctx.beginPath();
+  // ctx.rect(20, 20, 150, 100);
+  
+  
+  var subtract
+  
+  //Positive values down, negative values up.
+  var height
 
-  tegnFirkant(
-    (clicked_released_xpos[0]*pixel_size),
-    ((clicked_released_ypos[0] - difference)*pixel_size),
-    current_x*pixel_size,
-    ((current_y - difference)*pixel_size),
-    "blue",
-    false
-  );
+  //positive values to the right, negative to the left.
+  var width
+
+  //checks where current x and y pos are in relation to down_x and down_y
+
+  var right = false
+  var above = false
+
+  if (current_x - clicked_released_xpos[0] > 0){
+    right = true
+  } 
+
+  if (current_y - clicked_released_ypos[0] < 0) {
+    above = true
+  }
+  
+  if (right && above || !right &&  !above){
+    if (Math.abs(current_x - clicked_released_xpos[0]) > Math.abs(current_y - clicked_released_ypos[0]) ){
+        width = current_x - clicked_released_xpos[0]
+        height =  -(current_x - clicked_released_xpos[0])  
+      }
+  
+      else{
+        subtract = clicked_released_ypos[0]
+        width = -(current_y - subtract)
+        height = current_y - subtract
+  
+      }
+  }
+
+
+  else if (right && !above  || !right && above){
+    if (Math.abs(current_x - clicked_released_xpos[0]) > Math.abs(current_y - clicked_released_ypos[0])){
+      width = current_x - clicked_released_xpos[0]
+      height = current_x - clicked_released_xpos[0]
+    }
+
+    else{
+      width = current_y - clicked_released_ypos[0]
+      height = current_y - clicked_released_ypos[0]
+    }
+  }
+  //TODO: Redundant to have both width and heigth
+  // console.log(width)
+  // console.log((~~(height/absolute_width_square)) )
+
+  // console.log(width)
+  
+  clicked_released_xpos[1] = clicked_released_xpos[0] + (~~(width))
+  clicked_released_ypos[1] = clicked_released_ypos[0] + (~~(height))
+  
+  // console.log(clicked_released_ypos[1])
+  
+  // console.log(  clicked_released_xpos[0] + (width/absolute_width_square) + 2*size_lower  , 'whats')
+  
+  ctx.rect((clicked_released_xpos[0]),
+  ((clicked_released_ypos[0])),
+  width,
+  (height));
+  ctx.stroke();
+  
+
+
+
+  // clicked_released_xpos.sort(function (a, b) {return a - b;});
+  // clicked_released_ypos.sort(function (a, b) {return b - a;});
+
+  // var start_x = ~~(clicked_released_xpos[0]/absolute_width_square) + size_lower
+  // var end_x = ~~(clicked_released_xpos[1]/absolute_width_square) + size_lower
+  // var start_y = -(~~(clicked_released_ypos[0]/absolute_width_square) + size_lower) 
+  // var end_y = Math.abs(start_y) + Math.abs(start_x) + end_x + size_lower
+
+
 }
 
 function new_pixels(dimension_start_x, dimension_start_y, dimension_width, dimension_length) {
