@@ -71,7 +71,8 @@ class Square {
         this.ypos,
         this.pixel_size,
         this.pixel_size,
-        `hsl( ${this.hue} , ${this.saturation}% , ${this.lightness}%)`
+        `hsl( ${this.hue} , ${this.saturation}% , ${this.lightness}%)`,
+        size_lower
         );
       }
       else{
@@ -80,7 +81,8 @@ class Square {
           this.ypos,
           this.pixel_size,
           this.pixel_size,
-          `hsl(0, 0%, 0%)`
+          `hsl(0, 0%, 0%)`,
+          size_lower
           );
       }
       // tegnTekst(`(${this.xpos}, ${this.ypos})` ,this.xpos, this.ypos, 'black', 0, 'left', 10, 'Calibri', 'bottom')
@@ -106,16 +108,21 @@ class Square {
 }
 
 
+//TODO: DO not have to declare everytime...
 window.onload = winInit;
-function draw(x, y, width, heigth, color){
-
-  //TODO: DO not have to declare everytime...
-  size = (Math.abs(size_lower) + size_upper)
+function draw(x, y, width, heigth, color, start){
+  console.log((x-start))
   var absolute_width = (canvas.width/(size))
+  // size = (Math.abs(start) + size_upper)
   
+
+  absolute_width = (canvas.width/(size))
+
+
+
   ctx.fillStyle = color;
-  ctx.fillRect(((x-size_lower)*absolute_width)
-  , (((y-size_lower)*absolute_width)) + absolute_width
+  ctx.fillRect(((x-start)*absolute_width)
+  , (((y-start)*absolute_width)) + absolute_width
   , (width*absolute_width)
   , -(heigth*absolute_width));
 }
@@ -166,24 +173,6 @@ function  draw_squares(dimension_start_x, dimension_end_x, dimension_start_y,  d
       matrix_squares[x][y].tegn()
     }
   }
-
-  // if (dimension_start_x == dimension_start_y && dimension_width == dimension_length ) {
-  //   // dataURL = canvas.toDataURL();
-  //   // img.src = dataURL;
-  //   // img2.src = dataURL;
-  //   return
-  // }
-
-  // // row
-  // for (let x = dimension_start_x2; x < dimension_length; x++) {
-  //   for (let y = dimension_start_y2; y < dimension_width; y++) {
-  //     matrix_squares[x][y].tegn()
-  //     }
-  //   }
-
-  // // dataURL = canvas.toDataURL();
-  // // img.src = dataURL;
-
 }
 
 function change_hue(x, y) {
@@ -337,12 +326,19 @@ function get_cursor_position(canvas, event) {
 
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);  
-      // size = (end_x) - (start_x) 
-      console.log(size)
-      console.log({start_x}, {end_x})
-      console.log({start_y}, {end_y})
-      // draw_squares(start_x, end_x)   
+      size = (end_x) - (start_x) + 1 
+      
 
+      if (end_x - start_x > end_y - start_y ){
+        start_y -= 1
+      }
+      else if (end_x - start_x < end_y - start_y ){
+          start_x -= 1
+       }
+
+
+       console.log(size, start_x, end_x+1, 'supppp')
+       
       draw_squares(start_x, end_x+1, start_y, end_y+1)
     }
 
