@@ -18,7 +18,7 @@ get_saturation_expression.addEventListener("change",  function(){hsl_loop(2)});
 get_lightness_expression.addEventListener("change",  function(){hsl_loop(3)});
 get_size_lower.addEventListener("change", change_size_lower);
 get_size_upper.addEventListener("change", change_size_upper);
-get_upscale.addEventListener("click", function() {draw_squares(size_lower, size_lower, size_upper, size_upper)})
+get_upscale.addEventListener("click", function() {distance_x = size_lower; distance_y = size_lower; draw_squares(size_lower, size_upper, size_lower, size_upper)})
 get_pixel_size.addEventListener("change", change_pixel_size);
 
 //-----------------------Canvas-----------------------------
@@ -36,6 +36,9 @@ var matrix_squares = [];
 var size_lower = +get_size_lower.value;
 var size_upper = +get_size_upper.value;
 var size = (Math.abs(size_lower) + size_upper)/pixel_size;
+
+var distance_x = size_lower
+var distance_y = size_lower
 
 
 //-------------------------------GUIDING BOX FOR RESIZE--------------------
@@ -72,7 +75,6 @@ class Square {
         this.pixel_size,
         this.pixel_size,
         `hsl( ${this.hue} , ${this.saturation}% , ${this.lightness}%)`,
-        size_lower
         );
       }
       else{
@@ -82,7 +84,6 @@ class Square {
           this.pixel_size,
           this.pixel_size,
           `hsl(0, 0%, 0%)`,
-          size_lower
           );
       }
       // tegnTekst(`(${this.xpos}, ${this.ypos})` ,this.xpos, this.ypos, 'black', 0, 'left', 10, 'Calibri', 'bottom')
@@ -110,19 +111,17 @@ class Square {
 
 //TODO: DO not have to declare everytime...
 window.onload = winInit;
-function draw(x, y, width, heigth, color, start){
-  console.log((x-start))
+function draw(x, y, width, heigth, color){
+  // size = (Math.abs(size_lower) + size_upper)
   var absolute_width = (canvas.width/(size))
-  // size = (Math.abs(start) + size_upper)
   
-
-  absolute_width = (canvas.width/(size))
-
-
-
+  
+  // console.log((x-start)*absolute_width)
+  // console.log(((y-start)));
+  // console.log(width, heigth)
   ctx.fillStyle = color;
-  ctx.fillRect(((x-start)*absolute_width)
-  , (((y-start)*absolute_width)) + absolute_width
+  ctx.fillRect(((x-distance_x)*absolute_width)
+  , (((y-distance_y)*absolute_width)) + absolute_width
   , (width*absolute_width)
   , -(heigth*absolute_width));
 }
@@ -166,11 +165,11 @@ function create_squares(start, end) {
 
 }
 
-function  draw_squares(dimension_start_x, dimension_end_x, dimension_start_y,  dimension_end_y) {
-
+function draw_squares(dimension_start_x, dimension_end_x, dimension_start_y,  dimension_end_y) {
   for (let x = dimension_start_x, width = dimension_end_x; x < width; x++) {
     for (let y = dimension_start_y, length = dimension_end_y; y < length; y++) {
       matrix_squares[x][y].tegn()
+      console.log('drageing')
     }
   }
 }
@@ -203,6 +202,8 @@ function change_lightness(x, y) {
 function change_size_upper() {
 
   var new_size = parseInt(get_size_upper.value);
+  
+
 
   switch (true) {
     case (new_size > size_upper):
@@ -210,7 +211,8 @@ function change_size_upper() {
       var old_size_upper = size_upper;
       size_upper = new_size;
       size = (Math.abs(size_lower) + size_upper)/pixel_size;
-      
+      distance_x = size_lower
+      distance_y = size_lower
       ctx.drawImage(img, 0, 0, ((600/size)*(size-(new_size-old_size_upper))).toFixed(4), ((600/size)*(size-(new_size-old_size_upper))).toFixed(4));
         
       new_pixels(size_lower, old_size_upper, size_upper, size_upper)
@@ -218,6 +220,8 @@ function change_size_upper() {
 
     default:
       size_upper = new_size;
+      distance_x = size_lower
+      distance_y = size_lower
       draw_squares(size_lower, size_lower, size_upper, size_upper)
       break;
   }
@@ -227,6 +231,8 @@ function change_size_lower() {
 
   var new_size = parseInt(get_size_lower.value)/pixel_size;
 
+
+
   switch (true) {
     case (new_size < size_lower):
 
@@ -235,12 +241,17 @@ function change_size_lower() {
 
     size = (Math.abs(new_size) + size_upper);
     ctx.drawImage(img, (600/size)*(old_size_lower-new_size), (600/size)*(old_size_lower-new_size), ((600/size)*(size-(old_size_lower-new_size))).toFixed(4), ((600/size)*(size-(old_size_lower-new_size))).toFixed(4));
+   
+    distance_x = size_lower
+    distance_y = size_lower
     new_pixels(new_size, new_size, old_size_lower, size_upper)
 
     break;
 
     default:
       size_lower = new_size;
+      distance_x = size_lower
+      distance_y = size_lower
       draw_squares(size_lower, size_lower, size_upper, size_upper)
       break;
   }
@@ -326,20 +337,25 @@ function get_cursor_position(canvas, event) {
 
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);  
-      size = (end_x) - (start_x) + 1 
+      
       
 
       if (end_x - start_x > end_y - start_y ){
         start_y -= 1
       }
       else if (end_x - start_x < end_y - start_y ){
-          start_x -= 1
-       }
-
-
-       console.log(size, start_x, end_x+1, 'supppp')
-       
+        start_x -= 1
+      }
+      
+      
+      size = (end_x) - (start_x) + 1 
+      // size_lower = start_x
+      distance_x = start_x
+      distance_y = start_y
       draw_squares(start_x, end_x+1, start_y, end_y+1)
+      //  console.log(size, start_x, end_x+1, 'supppp')
+       
+
     }
 
     //TODO: No point in drawing everything of only a small part is shown,
@@ -347,6 +363,8 @@ function get_cursor_position(canvas, event) {
     
   }
 }
+
+
 
 function zoom_guider() {
 
@@ -415,7 +433,7 @@ function zoom_guider() {
       height = current_y - clicked_released_ypos[0]
     }
   }
-  //TODO: Redundant to have both width and heigth
+  //TODO: Redundant to have both width and heigth ?
   // console.log(width)
   // console.log((~~(height/absolute_width_square)) )
 
