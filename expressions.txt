@@ -1,6 +1,17 @@
 
 TODO: Make a into pretty markdown file.
 
+//------------------------------\\
+//math.js library is recommended
+//npm install mathjs
+//------------------------------\\
+
+//structure:
+//classes, global variables
+//window.onload = winInit
+//Functions
+
+
 //------------------------------------------------------------------------------\\
 //!                               EXPLORE!
 //------------------------------------------------------------------------------\\
