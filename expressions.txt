@@ -1,0 +1,82 @@
+
+TODO: Make a into pretty markdown file.
+
+//------------------------------------------------------------------------------\\
+//!                               EXPLORE!
+//------------------------------------------------------------------------------\\
+
+// Change color with these:
+//
+//TRY TO USE Math.random() * expression. i.e => Math.random() * (X*Y)
+//
+// try X*Y
+// try X*n/Y
+// try X+Y
+// try X-Y
+// try -X+Y
+// try -X-Y
+// try X*3-Y*5
+// try X*(X/Y)
+// try X**X-Y**Y
+// try Math.sin(X)*100 + Math.sin(Y)*100)
+// try (X+Y)**2
+// try X*Y**2 - (Y**3)
+// try X*Y**2 - (Y**2)
+// try X*Y**2
+// try (X*3-Y)*(Y*10)
+// try (X*3-Y)*(Y*120)
+// try (sin(X*Y)*2)**6
+//try Math.random()*1000
+//try Math.min(X,Y)
+
+//Lemniscate : ((X)**2 + (Y)**2)**2 - ((X)**2 - (Y)**2)
+
+//SUPER COOL
+//try ln(abs(X*Y))*100
+//try ln(X*Y)*100
+//try (Y)**2 + (X)**2
+//try (Y/10)**2 + (X/10)**2
+//try X%Y * n or whatever
+//try X<<Y
+//try X/Y*1000
+//try (Y)**2>>X*10000
+//try Y&X
+//try Y^X
+//try Y|X
+//try (X.Y)^100
+//try (X.Y)**2
+//try (X.Y)*X*Y
+//try (X.Y)*X
+//try (X.Y)*ln(X)
+//try sqrt((X)**2 + (Y)**2)
+//try sqrt((X)**3 + (Y)**3)
+//try sqrt((X)**4 + (Y)**3)
+//try sqrt((X)**4 + (Y)**4)
+//try sqrt((X)**4 + (Y)**5)
+//try Math.log(X*Y)*1000
+//try Math.acosh(abs(X*Y))*1000
+//try Math.atan(abs(X*Y))*100000
+//try Math.cbrt(abs(X*Y))*10
+//try ! Math.clz32(abs(X*Y))*100
+//try Math.cos(X*Y)*100
+//try Math.sin(X*Y)*100
+//try Math.tan(X*Y)*100
+//try abs(X.Y)*Y*X
+//try XyXy
+//try Xy*X
+//try ((X+Y)**2) % ((X)**2)
+//try Math.min(X,((X)**2)/Y)
+//try ! Math.random() * (X - Y) + X
+//try ! Math.random() * (X*Y)
+//try ! Math.random() * (X+Y) and saturation Math.random() * ((abs(X)+abs(Y))) and hue Math.random() * ((abs(X)+abs(Y)))
+//try v2a([X,Y], [Y+Y,X*2])
+//try v2a([X,Y], [X,10])
+//try ! v2a([  (((1 + Math.sqrt(5)) / 2) ** (X+Y) - ((1 - Math.sqrt(5)) / 2) ** (X+Y)) /   Math.sqrt(5), X*Y*10], [0,1], "deg")
+//try ! (((X)**2 + (Y)**2)**2 - ((X)**2 - (Y)**2) )/(X+Y)/100
+//try ! ((X)**2 + (Y)**2)**2 /(X*Y)/1
+
+//OTHER
+//try (X*Y)**2 and saturation: X*Y -100
+//try X+Y and saturation abs(X)*10 and hue abs(X)*10
+//try X+Y and saturation abs(X*Y)*10
+//try X+Y and saturation abs(X*Y)*abs((X)**2) and hue (X)**2*(Y)**2
