@@ -18,10 +18,13 @@ get_size_upper.addEventListener("change", change_size_upper);
 get_pixel_size.addEventListener("change", change_pixel_size);
 
 get_upscale.addEventListener("click", function () {
+  
+  size_lower = get_size_lower.value / pixel_size
+  size_upper = get_size_upper.value / pixel_size
+  size = (size_upper - size_lower)
   distance_x = size_lower * pixel_size;
   distance_y = size_lower * pixel_size;
-  // absolute_width = canvas.width / size;
-  // absolute_width = absolute_width/ pixel_size
+  absolute_width = canvas.width / size / pixel_size;
   draw_pixels(size_lower, size_upper, size_lower, size_upper);
 });
 
@@ -67,6 +70,14 @@ let clicked_released_xpos = [];
 let clicked_released_ypos = [];
 
 //----------------------------Classes-------------------------
+
+
+
+
+//TODO: when size changes, absolute_widht also changes, and this is the only times that happens
+//! also change size, distance_x and stuff
+
+
 class pixel {
   constructor(xpos, ypos, hue, saturation, lightness, pixel_size) {
     this.xpos = xpos;
@@ -74,25 +85,35 @@ class pixel {
     this.hue = hue;
     this.saturation = saturation;
     this.lightness = lightness;
+    this.color = `hsl( ${this.hue} , ${this.saturation}% , ${this.lightness}%)`
     // this.pixel_size = pixel_size;
     this.tegn();
   }
 
   tegn() {
-    if (isFinite(this.hue)) {
-      draw(
-        this.xpos,
-        this.ypos,
-        `hsl( ${this.hue} , ${this.saturation}% , ${this.lightness}%)`
-      );
-    } 
-    else {
-      draw(
-        this.xpos,
-        this.ypos,
-        `hsl(0, 0%, 0%)`
-      );
-    }
+
+    ctx.fillStyle = this.color;
+    ctx.fillRect(
+      (this.xpos - distance_x) * absolute_width,
+      (this.ypos - distance_y) * absolute_width + absolute_width,
+      absolute_width,
+      -(absolute_width)
+    );
+    
+    // if (isFinite(this.hue)) {
+    //   draw(
+    //     this.xpos,
+    //     this.ypos,
+    //     `hsl( ${this.hue} , ${this.saturation}% , ${this.lightness}%)`
+    //   );
+    // }
+    // else {
+    //   draw(
+    //     this.xpos,
+    //     this.ypos,
+    //     `hsl(0, 0%, 0%)`
+    //   );
+    // }
     // tegnTekst(`(${this.xpos}, ${this.ypos})` ,this.xpos, this.ypos, 'black', 0, 'left', 10, 'Calibri', 'bottom')
   }
 
@@ -118,8 +139,8 @@ class pixel {
 window.onload = winInit;
 function winInit() {
   // ctx.filter = "hue-rotate(200deg)" INTERESTING!
-  size = ( size_upper - size_lower);
-  absolute_width = canvas.width / size; //width in px of every "pixel" drawn on canvas
+  size = (size_upper - size_lower);
+  absolute_width = canvas.width / size / pixel_size; //width in px of every "pixel" drawn on canvas
   new_pixels(size_lower, size_lower, size_upper, size_upper);
 }
 
@@ -196,6 +217,8 @@ function draw(x, y, color) {
 }
 
 
+
+
 function draw_pixels(dimension_start_x, dimension_end_x, dimension_start_y, dimension_end_y) {
   for (let x = dimension_start_x, width = dimension_end_x; x < width; x++) {
     for (let y = dimension_start_y, length = dimension_end_y; y < length; y++) {
@@ -236,7 +259,7 @@ function hsl_loop(letter) {
   distance_x = size_lower;
   distance_y = size_lower;
 
-  absolute_width = canvas.width / size; //width in px of every "pixel" drawn on canvas
+  absolute_width = canvas.width / size / pixel_size; //width in px of every "pixel" drawn on canvas
 
   for (let x = size_lower; x < size_upper; x++) {
     for (let y = size_lower; y < size_upper; y++) {
@@ -385,7 +408,7 @@ function get_cursor_position(canvas, event) {
       size = end_x - start_x + 1;
       distance_x = start_x;
       distance_y = start_y;
-      absolute_width = canvas.width / size;
+      absolute_width = canvas.width / size / pixel_size;
       draw_pixels(start_x, end_x + 1, start_y, end_y + 1);
     }
   }
