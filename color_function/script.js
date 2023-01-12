@@ -7,20 +7,24 @@ const get_lightness_expression = document.getElementById( "lightness_expression"
 const get_size_lower = document.getElementById("size_lower");
 const get_size_upper = document.getElementById("size_upper");
 const get_pixel_size = document.getElementById("pixel_size");
+
 const get_upscale = document.getElementById("upscale");
 
 get_hue_expression.addEventListener("change", function () { hue_expression = get_hue_expression.value; hsl_loop(1); });
 get_saturation_expression.addEventListener("change", function () { saturation_expression = get_saturation_expression.value; hsl_loop(2); });
 get_lightness_expression.addEventListener("change", function () { lightness_expression = get_lightness_expression.value; hsl_loop(3); });
-
 get_size_lower.addEventListener("change", change_size_lower);
 get_size_upper.addEventListener("change", change_size_upper);
 get_pixel_size.addEventListener("change", change_pixel_size);
 
 get_upscale.addEventListener("click", function () {
-  distance_x = size_lower;
-  distance_y = size_lower;
-  absolute_width = canvas.width / size;
+  
+  size_lower = get_size_lower.value / pixel_size
+  size_upper = get_size_upper.value / pixel_size
+  size = (size_upper - size_lower)
+  distance_x = size_lower * pixel_size;
+  distance_y = size_lower * pixel_size;
+  absolute_width = canvas.width / size / pixel_size;
   draw_pixels(size_lower, size_upper, size_lower, size_upper);
 });
 
@@ -38,7 +42,7 @@ ctx.imageSmoothingEnabled = false;
 let matrix_pixels = [];
 let size_lower = +get_size_lower.value;
 let size_upper = +get_size_upper.value;
-let size = (Math.abs(size_lower) + size_upper) / pixel_size;
+let size =  (size_upper - size_lower);
 let absolute_width;
 var pixel_size = parseFloat(get_pixel_size.value);
 
@@ -66,6 +70,14 @@ let clicked_released_xpos = [];
 let clicked_released_ypos = [];
 
 //----------------------------Classes-------------------------
+
+
+
+
+//TODO: when size changes, absolute_widht also changes, and this is the only times that happens
+//! also change size, distance_x and stuff
+
+
 class pixel {
   constructor(xpos, ypos, hue, saturation, lightness, pixel_size) {
     this.xpos = xpos;
@@ -78,25 +90,32 @@ class pixel {
   }
 
   tegn() {
-    if (isFinite(this.hue)) {
-      draw(
-        this.xpos,
-        this.ypos,
-        this.pixel_size,
-        this.pixel_size,
-        `hsl( ${this.hue} , ${this.saturation}% , ${this.lightness}%)`
-      );
-    } 
-    else {
-      draw(
-        this.xpos,
-        this.ypos,
-        this.pixel_size,
-        this.pixel_size,
-        `hsl(0, 0%, 0%)`
-      );
+
+    switch (true) {
+    
+      case isFinite(this.hue):
+
+        this.color = `hsl( ${this.hue} , ${this.saturation}% , ${this.lightness}%)`
+        ctx.fillStyle = this.color;
+        ctx.fillRect(
+          this.xpos,
+          this.ypos,
+          this.pixel_size,
+          this.pixel_size
+        );
+        break;
+  
+      default:
+        this.color = `hsl(0, 0%, 0%)`
+        ctx.fillStyle = this.color;
+        ctx.fillRect(
+          this.xpos,
+          this.ypos,
+          this.pixel_size,
+          this.pixel_size
+        );
+        break;
     }
-    // tegnTekst(`(${this.xpos}, ${this.ypos})` ,this.xpos, this.ypos, 'black', 0, 'left', 10, 'Calibri', 'bottom')
   }
 
   hue_changed(x, y) {
@@ -121,21 +140,89 @@ class pixel {
 window.onload = winInit;
 function winInit() {
   // ctx.filter = "hue-rotate(200deg)" INTERESTING!
-  size = (Math.abs(size_lower) + size_upper) / pixel_size;
-  absolute_width = canvas.width / size; //width in px of every "pixel" drawn on canvas
+  size = (size_upper - size_lower) ;
+  absolute_width = ~~(canvas.width / size / pixel_size); //width in px of every "pixel" drawn on canvas
   new_pixels(size_lower, size_lower, size_upper, size_upper);
 }
 
 //-----------------------FUNCTIONS------------------------
 
-function draw(x, y, width, heigth, color) {
-  ctx.fillStyle = color;
-  ctx.fillRect(
-    (x - distance_x) * absolute_width,
-    (y - distance_y) * absolute_width + absolute_width,
-    width * absolute_width,
-    -(heigth * absolute_width)
-  );
+function new_pixels(start_x, start_y, width, length) {
+  absolute_width = (canvas.width / size / pixel_size);
+
+  //column
+  //width is locally declared as width for improved performance by reducing amount of property lookups
+  for (let x = start_x, runs = width; x < runs; x++) {
+    if (matrix_pixels[x] == undefined) {
+      matrix_pixels[x] = new Array(~~length);
+    }
+    
+    for (let y = start_y, runs = length; y < runs; y++) {
+      matrix_pixels[x][y] = new pixel(
+        (x - size_lower) * absolute_width,
+        (y - size_lower) * absolute_width,
+        change_hue(x, y),
+        change_saturation(x, y),
+        change_lightness(x, y),
+        absolute_width
+      );
+    }
+  }
+
+  if (start_x == start_y && width == length) {
+    dataURL = canvas.toDataURL();
+    original_img.src = dataURL;
+    resizing_img.src = dataURL;
+    return;
+  }
+
+  // row
+  for (let x = start_y, runs = length; x < runs; x++) {
+    if (matrix_pixels[x] == undefined) {
+      matrix_pixels[x] = [];
+      // matrix_pixels[x] = new Array(~~width);
+    }
+
+    for (let y = start_x, runs = width; y < runs; y++) {
+      matrix_pixels[x][y] = new pixel(
+        (x - size_lower) * absolute_width,
+        (y - size_lower) * absolute_width,
+        change_hue(x, y),
+        change_saturation(x, y),
+        change_lightness(x, y),
+        absolute_width
+      );
+    }
+  }
+  dataURL = canvas.toDataURL();
+  original_img.src = dataURL;
+  resizing_img.src = dataURL;
+}
+
+function draw_pixels(start_x, width, start_y, length) {
+  for (let x = start_x, runs = width; x < runs; x++) {
+    for (let y = start_y, runs = length; y < runs; y++) {
+      matrix_pixels[x][y].tegn();
+    }
+  }
+  resizing_img.src = canvas.toDataURL();
+}
+
+function change_pixel_size() {
+  
+  //Checks if get_pixel_size.value has quotations, having quotations creates a cool effect
+  //Because it makes pixel_size a string and not a float
+  if (get_pixel_size.value.includes('"')) {
+    pixel_size = get_pixel_size.value.replace(/\"/g, "");
+  } 
+  else {
+    pixel_size = parseFloat(get_pixel_size.value);
+  }
+
+  size_lower = get_size_lower.value / pixel_size;
+  size_upper = get_size_upper.value / pixel_size;
+  size =  size_upper - size_lower;
+  new_pixels(size_lower, size_lower, size_upper, size_upper)
 }
 
 function hsl_loop(letter) {
@@ -152,7 +239,7 @@ function hsl_loop(letter) {
   distance_x = size_lower;
   distance_y = size_lower;
 
-  absolute_width = canvas.width / size; //width in px of every "pixel" drawn on canvas
+  absolute_width = canvas.width / size / pixel_size; //width in px of every "pixel" drawn on canvas
 
   for (let x = size_lower; x < size_upper; x++) {
     for (let y = size_lower; y < size_upper; y++) {
@@ -162,20 +249,6 @@ function hsl_loop(letter) {
   dataURL = canvas.toDataURL();
   original_img.src = dataURL;
   resizing_img.src = dataURL;
-}
-
-function create_pixels(start, end) {
-  size = (Math.abs(size_lower) + size_upper) / pixel_size;
-  new_pixels(start, start, end, end);
-}
-
-function draw_pixels(dimension_start_x, dimension_end_x, dimension_start_y, dimension_end_y) {
-  for (let x = dimension_start_x, width = dimension_end_x; x < width; x++) {
-    for (let y = dimension_start_y, length = dimension_end_y; y < length; y++) {
-      matrix_pixels[x][y].tegn();
-    }
-  }
-  resizing_img.src = canvas.toDataURL();
 }
 
 function change_hue(x, y) {
@@ -194,17 +267,15 @@ function change_lightness(x, y) {
 //TODO: turn into 1 function... ?
 
 function change_size_upper() {
-  let new_size = parseInt(get_size_upper.value);
+  let new_size = parseInt(get_size_upper.value) / pixel_size;
 
   switch (true) {
     
     case new_size > size_upper:
       let old_size_upper = size_upper;
       size_upper = new_size;
-      size = (Math.abs(size_lower) + size_upper) / pixel_size;
-      
-      distance_x = size_lower;
-      distance_y = size_lower;
+
+      size =  size_upper - size_lower;
       
       ctx.drawImage(
         resizing_img,
@@ -213,15 +284,17 @@ function change_size_upper() {
         ~~((600 / size) * (size - (new_size - old_size_upper))),
         ~~((600 / size) * (size - (new_size - old_size_upper)))
       );
-
+      
       new_pixels(size_lower, old_size_upper, size_upper, size_upper);
       break;
 
     default:
       size_upper = new_size;
-      distance_x = size_lower;
-      distance_y = size_lower;
-      draw_pixels(size_lower, size_lower, size_upper, size_upper);
+      distance_x = size_lower * pixel_size;
+      distance_y = size_lower * pixel_size;
+      size =  size_upper - size_lower;
+      absolute_width = canvas.width / size / pixel_size
+      draw_pixels(size_lower, size_upper, size_lower, size_upper);
       break;
   }
 }
@@ -234,7 +307,8 @@ function change_size_lower() {
       let old_size_lower = size_lower;
       size_lower = new_size;
 
-      size = Math.abs(new_size) + size_upper;
+      size =  size_upper - size_lower;
+
       ctx.drawImage(
         resizing_img,
         (600 / size) * (old_size_lower - new_size),
@@ -243,39 +317,31 @@ function change_size_lower() {
         ~~((600 / size) * (size - (old_size_lower - new_size)))
       );
 
-      distance_x = size_lower;
-      distance_y = size_lower;
+      distance_x = size_lower * pixel_size;
+      distance_y = size_lower * pixel_size;
       new_pixels(new_size, new_size, old_size_lower, size_upper);
-
+      
       break;
 
-    default:
-      size_lower = new_size;
-      distance_x = size_lower;
-      distance_y = size_lower;
-      draw_pixels(size_lower, size_lower, size_upper, size_upper);
+      default:
+      
+        size_lower = new_size;
+        distance_x = (size_lower * pixel_size);
+        distance_y = (size_lower * pixel_size);
+
+        
+        size =  size_upper - size_lower;
+        absolute_width = canvas.width / size / pixel_size
+        draw_pixels(size_lower, size_upper, size_lower, size_upper);
       break;
   }
 }
 
-function change_pixel_size() {
-  //Checks if get_pixel_size.value has quotations, having quotations creates a cool effect
-  //Because it makes pixel_size a string and not a float
-  if (get_pixel_size.value.includes('"')) {
-    pixel_size = get_pixel_size.value.replace(/\"/g, "");
-  } 
-  else {
-    pixel_size = parseFloat(get_pixel_size.value);
-  }
 
-  size_lower = get_size_lower.value / pixel_size;
-  size_upper = get_size_upper.value / pixel_size;
-  size = Math.abs(size_lower) + size_upper;
-  create_pixels(size_lower, size_upper);
-}
+//---------------------ZOOMING-------------------
 
 function get_cursor_position(canvas, event) {
-  size = Math.abs(size_lower) + size_upper;
+  size =  size_upper - size_lower;
 
   let absolute_width_pixel = canvas.width / size;
   // let absolute_heigth_pixel = canvas.height / size;
@@ -322,7 +388,7 @@ function get_cursor_position(canvas, event) {
       size = end_x - start_x + 1;
       distance_x = start_x;
       distance_y = start_y;
-      absolute_width = canvas.width / size;
+      absolute_width = canvas.width / size / pixel_size;
       draw_pixels(start_x, end_x + 1, start_y, end_y + 1);
     }
   }
@@ -384,55 +450,28 @@ function zoom_guider() {
   ctx.stroke();
 }
 
-function new_pixels(start_x, start_y, width, length) {
-  absolute_width = canvas.width / size;
-  //column
-  //width is locally declared as width for improved performance by reducing amount of property lookups
-  for (let x = start_x, runs = width; x < runs; x++) {
-    if (matrix_pixels[x] == undefined) {
-      matrix_pixels[x] = new Array(~~length);
-    }
 
-    for (let y = start_y, runs = length; y < runs; y++) {
-      matrix_pixels[x][y] = new pixel(
-        x * pixel_size,
-        y * pixel_size,
-        change_hue(x * pixel_size, y * pixel_size),
-        change_saturation(x * pixel_size, y * pixel_size),
-        change_lightness(x * pixel_size, y * pixel_size),
-        pixel_size
-      );
-    }
-  }
 
-  if (start_x == start_y && width == length) {
-    dataURL = canvas.toDataURL();
-    original_img.src = dataURL;
-    resizing_img.src = dataURL;
-    return;
-  }
 
-  // row
-  for (let x = start_y, runs = length; x < runs; x++) {
-    if (matrix_pixels[x] == undefined) {
-      matrix_pixels[x] = new Array(~~width);
-    }
+//REMOVE?
 
-    for (let y = start_x, runs = width; y < runs; y++) {
-      matrix_pixels[x][y] = new pixel(
-        x * pixel_size,
-        y * pixel_size,
-        change_hue(x * pixel_size, y * pixel_size),
-        change_saturation(x * pixel_size, y * pixel_size),
-        change_lightness(x * pixel_size, y * pixel_size),
-        pixel_size
-      );
-    }
-  }
-  dataURL = canvas.toDataURL();
-  original_img.src = dataURL;
-  resizing_img.src = dataURL;
-}
+// function create_pixels(start, end) {
+//   size = size_upper - size_lower;
+//   new_pixels(start, start, end, end);
+// }
+
+// function draw(x, y, color) {
+//   ctx.fillStyle = color;
+//   ctx.fillRect(
+//     (x - distance_x) * absolute_width,
+//     (y - distance_y) * absolute_width + absolute_width,
+//     absolute_width,
+//     -(absolute_width)
+//   );
+// }
+
+
+//END OF REMOVE
 
 //------------------START--------------------
 //TO BE USED ANOTHER TIME?
@@ -458,7 +497,7 @@ function new_pixels(start_x, start_y, width, length) {
 //!HUGE? TODO: use webworkers, ask chat gpt-3 for help
 
 
-//TODO: Minor fix in the new_pixels function, it creates the corner piece twice
+//?WONFIX TODO: Minor fix in the new_pixels function, it creates the corner piece twice
 
 //TODO: Research complex plotting or whatever, make an option to change to using complex numbers?
 
@@ -474,11 +513,11 @@ function new_pixels(start_x, start_y, width, length) {
 //TODO: Create option to make a variable that changes every second f.eks. goes from 1 to 10 then 10 to 1, call it n and then n can be
 // used in the color chooser
 
+
 //TODO: when changing size, the direction of which the new image is drawn in is wrong..
-
 //TODO: Add more color models, i.e rgb and such
-
 //TODO: Make it possible to click a button, or hold down shift, or something, and then be able to hover a pixel, get the position and color(both see the color as a larger image and see the values for the color)?
+
 
 //*------------------------------------------------COMPLETED---------------------------------------
 //* Create variable for width and height of pixels(or just size of pixels), must change array size to compensate
