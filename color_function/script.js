@@ -39,7 +39,7 @@ ctx.imageSmoothingEnabled = false;
 let matrix_pixels = [];
 let size_lower = +get_size_lower.value;
 let size_upper = +get_size_upper.value;
-let size = (Math.abs(size_lower) + size_upper) / pixel_size;
+let size =  (size_upper - size_lower);
 let absolute_width;
 var pixel_size = parseFloat(get_pixel_size.value);
 
@@ -118,13 +118,73 @@ class pixel {
 window.onload = winInit;
 function winInit() {
   // ctx.filter = "hue-rotate(200deg)" INTERESTING!
-  size = (Math.abs(size_lower) + size_upper) / pixel_size;
+  size = ( size_upper - size_lower);
   absolute_width = canvas.width / size; //width in px of every "pixel" drawn on canvas
   new_pixels(size_lower, size_lower, size_upper, size_upper);
 }
 
 //-----------------------FUNCTIONS------------------------
-// (x) * pixel_size, (y) * pixel_size, change_hue(x * pixel_size, y * pixel_size), change_saturation(x * pixel_size, y * pixel_size), change_lightness(x * pixel_size, y * pixel_size), pixel_size
+
+function new_pixels(start_x, start_y, width, length) {
+  // console.log({start_x}, {start_y}, {width}, {length})
+  absolute_width = (canvas.width / size / pixel_size);
+
+  //column
+  //width is locally declared as width for improved performance by reducing amount of property lookups
+  for (let x = start_x, runs = width; x < runs; x++) {
+    if (matrix_pixels[x] == undefined) {
+      matrix_pixels[x] = new Array(~~length);
+    }
+    
+    for (let y = start_y, runs = length; y < runs; y++) {
+      matrix_pixels[x][y] = new pixel(
+        x * pixel_size,
+        y * pixel_size,
+        change_hue(x * pixel_size, y * pixel_size),
+        change_saturation(x * pixel_size, y * pixel_size),
+        change_lightness(x * pixel_size, y * pixel_size),
+        pixel_size
+      );
+    }
+  }
+
+  if (start_x == start_y && width == length) {
+    dataURL = canvas.toDataURL();
+    original_img.src = dataURL;
+    resizing_img.src = dataURL;
+    return;
+  }
+
+  // row
+  for (let x = start_y, runs = length; x < runs; x++) {
+    if (matrix_pixels[x] == undefined) {
+      matrix_pixels[x] = [];
+      // matrix_pixels[x] = new Array(~~width);
+    }
+
+    for (let y = start_x, runs = width; y < runs; y++) {
+
+      matrix_pixels[x][y] = new pixel(
+        x * pixel_size,
+        y * pixel_size,
+        change_hue(x * pixel_size, y * pixel_size),
+        change_saturation(x * pixel_size, y * pixel_size),
+        change_lightness(x * pixel_size, y * pixel_size),
+        pixel_size
+      );
+    }
+  }
+  dataURL = canvas.toDataURL();
+  original_img.src = dataURL;
+  resizing_img.src = dataURL;
+}
+
+function create_pixels(start, end) {
+  size = size_upper - size_lower;
+  new_pixels(start, start, end, end);
+}
+
+
 function draw(x, y, color) {
   ctx.fillStyle = color;
   ctx.fillRect(
@@ -133,6 +193,33 @@ function draw(x, y, color) {
     absolute_width,
     -(absolute_width)
   );
+}
+
+
+function draw_pixels(dimension_start_x, dimension_end_x, dimension_start_y, dimension_end_y) {
+  for (let x = dimension_start_x, width = dimension_end_x; x < width; x++) {
+    for (let y = dimension_start_y, length = dimension_end_y; y < length; y++) {
+      matrix_pixels[x][y].tegn();
+    }
+  }
+  resizing_img.src = canvas.toDataURL();
+}
+
+function change_pixel_size() {
+  
+  //Checks if get_pixel_size.value has quotations, having quotations creates a cool effect
+  //Because it makes pixel_size a string and not a float
+  if (get_pixel_size.value.includes('"')) {
+    pixel_size = get_pixel_size.value.replace(/\"/g, "");
+  } 
+  else {
+    pixel_size = parseFloat(get_pixel_size.value);
+  }
+
+  size_lower = get_size_lower.value / pixel_size;
+  size_upper = get_size_upper.value / pixel_size;
+  size =  size_upper - size_lower;
+  new_pixels(size_lower, size_lower, size_upper, size_upper)
 }
 
 function hsl_loop(letter) {
@@ -161,20 +248,6 @@ function hsl_loop(letter) {
   resizing_img.src = dataURL;
 }
 
-function create_pixels(start, end) {
-  size = (Math.abs(size_lower) + size_upper);
-  new_pixels(start, start, end, end);
-}
-
-function draw_pixels(dimension_start_x, dimension_end_x, dimension_start_y, dimension_end_y) {
-  for (let x = dimension_start_x, width = dimension_end_x; x < width; x++) {
-    for (let y = dimension_start_y, length = dimension_end_y; y < length; y++) {
-      matrix_pixels[x][y].tegn();
-    }
-  }
-  resizing_img.src = canvas.toDataURL();
-}
-
 function change_hue(x, y) {
   return Function(`return ${hue_expression.replace(/X/g, x).replace(/Y/g, y)}`)();
 }
@@ -192,15 +265,14 @@ function change_lightness(x, y) {
 
 function change_size_upper() {
   let new_size = parseInt(get_size_upper.value) / pixel_size;
+
   switch (true) {
     
     case new_size > size_upper:
       let old_size_upper = size_upper;
       size_upper = new_size;
 
-      size = (Math.abs(size_lower) + size_upper);
-      distance_x = size_lower * pixel_size;
-      distance_y = size_lower * pixel_size;
+      size =  size_upper - size_lower;
       
       ctx.drawImage(
         resizing_img,
@@ -217,8 +289,8 @@ function change_size_upper() {
       size_upper = new_size;
       distance_x = size_lower * pixel_size;
       distance_y = size_lower * pixel_size;
-      size = (Math.abs(size_lower) + size_upper);
-      absolute_width = canvas.width / size
+      size =  size_upper - size_lower;
+      absolute_width = canvas.width / size / pixel_size
       draw_pixels(size_lower, size_upper, size_lower, size_upper);
       break;
   }
@@ -232,7 +304,8 @@ function change_size_lower() {
       let old_size_lower = size_lower;
       size_lower = new_size;
 
-      size = Math.abs(new_size) + size_upper;
+      size =  size_upper - size_lower;
+
       ctx.drawImage(
         resizing_img,
         (600 / size) * (old_size_lower - new_size),
@@ -244,40 +317,28 @@ function change_size_lower() {
       distance_x = size_lower * pixel_size;
       distance_y = size_lower * pixel_size;
       new_pixels(new_size, new_size, old_size_lower, size_upper);
-
-      break;
-
-    default:
       
-      size_lower = new_size;
-      distance_x = size_lower * pixel_size;
-      distance_y = size_lower * pixel_size;
-      size = (Math.abs(size_lower) + size_upper);
-      absolute_width = canvas.width / size
-      draw_pixels(size_lower, size_upper, size_lower, size_upper);
+      break;
+
+      default:
+      
+        size_lower = new_size;
+        distance_x = (size_lower * pixel_size);
+        distance_y = (size_lower * pixel_size);
+
+        
+        size =  size_upper - size_lower;
+        absolute_width = canvas.width / size / pixel_size
+        draw_pixels(size_lower, size_upper, size_lower, size_upper);
       break;
   }
 }
 
-function change_pixel_size() {
-  
-  //Checks if get_pixel_size.value has quotations, having quotations creates a cool effect
-  //Because it makes pixel_size a string and not a float
-  if (get_pixel_size.value.includes('"')) {
-    pixel_size = get_pixel_size.value.replace(/\"/g, "");
-  } 
-  else {
-    pixel_size = parseFloat(get_pixel_size.value);
-  }
 
-  size_lower = get_size_lower.value / pixel_size;
-  size_upper = get_size_upper.value / pixel_size;
-  size = Math.abs(size_lower) + size_upper;
-  create_pixels(size_lower, size_upper);
-}
+//---------------------ZOOMING-------------------
 
 function get_cursor_position(canvas, event) {
-  size = Math.abs(size_lower) + size_upper;
+  size =  size_upper - size_lower;
 
   let absolute_width_pixel = canvas.width / size;
   // let absolute_heigth_pixel = canvas.height / size;
@@ -386,58 +447,6 @@ function zoom_guider() {
   ctx.stroke();
 }
 
-function new_pixels(start_x, start_y, width, length) {
-  // console.log({start_x}, {start_y}, {width}, {length})
-  absolute_width = (canvas.width / size / pixel_size);
-
-  //column
-  //width is locally declared as width for improved performance by reducing amount of property lookups
-  for (let x = start_x, runs = width; x < runs; x++) {
-    if (matrix_pixels[x] == undefined) {
-      matrix_pixels[x] = new Array(~~length);
-    }
-    
-    for (let y = start_y, runs = length; y < runs; y++) {
-      matrix_pixels[x][y] = new pixel(
-        x * pixel_size,
-        y * pixel_size,
-        change_hue(x * pixel_size, y * pixel_size),
-        change_saturation(x * pixel_size, y * pixel_size),
-        change_lightness(x * pixel_size, y * pixel_size),
-        pixel_size
-      );
-    }
-  }
-
-  if (start_x == start_y && width == length) {
-    dataURL = canvas.toDataURL();
-    original_img.src = dataURL;
-    resizing_img.src = dataURL;
-    return;
-  }
-
-  // row
-  for (let x = start_y, runs = length; x < runs; x++) {
-    if (matrix_pixels[x] == undefined) {
-      matrix_pixels[x] = new Array(~~width);
-    }
-
-    for (let y = start_x, runs = width; y < runs; y++) {
-
-      matrix_pixels[x][y] = new pixel(
-        x * pixel_size,
-        y * pixel_size,
-        change_hue(x * pixel_size, y * pixel_size),
-        change_saturation(x * pixel_size, y * pixel_size),
-        change_lightness(x * pixel_size, y * pixel_size),
-        pixel_size
-      );
-    }
-  }
-  dataURL = canvas.toDataURL();
-  original_img.src = dataURL;
-  resizing_img.src = dataURL;
-}
 
 //------------------START--------------------
 //TO BE USED ANOTHER TIME?
