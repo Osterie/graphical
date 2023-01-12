@@ -85,36 +85,37 @@ class pixel {
     this.hue = hue;
     this.saturation = saturation;
     this.lightness = lightness;
-    this.color = `hsl( ${this.hue} , ${this.saturation}% , ${this.lightness}%)`
-    // this.pixel_size = pixel_size;
+    this.pixel_size = pixel_size;
     this.tegn();
   }
 
   tegn() {
 
-    ctx.fillStyle = this.color;
-    ctx.fillRect(
-      (this.xpos - distance_x) * absolute_width,
-      (this.ypos - distance_y) * absolute_width + absolute_width,
-      absolute_width,
-      -(absolute_width)
-    );
+    switch (true) {
     
-    // if (isFinite(this.hue)) {
-    //   draw(
-    //     this.xpos,
-    //     this.ypos,
-    //     `hsl( ${this.hue} , ${this.saturation}% , ${this.lightness}%)`
-    //   );
-    // }
-    // else {
-    //   draw(
-    //     this.xpos,
-    //     this.ypos,
-    //     `hsl(0, 0%, 0%)`
-    //   );
-    // }
-    // tegnTekst(`(${this.xpos}, ${this.ypos})` ,this.xpos, this.ypos, 'black', 0, 'left', 10, 'Calibri', 'bottom')
+      case isFinite(this.hue):
+
+        this.color = `hsl( ${this.hue} , ${this.saturation}% , ${this.lightness}%)`
+        ctx.fillStyle = this.color;
+        ctx.fillRect(
+          this.xpos,
+          this.ypos,
+          this.pixel_size,
+          this.pixel_size
+        );
+        break;
+  
+      default:
+        this.color = `hsl(0, 0%, 0%)`
+        ctx.fillStyle = this.color;
+        ctx.fillRect(
+          this.xpos,
+          this.ypos,
+          this.pixel_size,
+          this.pixel_size
+        );
+        break;
+    }
   }
 
   hue_changed(x, y) {
@@ -139,15 +140,14 @@ class pixel {
 window.onload = winInit;
 function winInit() {
   // ctx.filter = "hue-rotate(200deg)" INTERESTING!
-  size = (size_upper - size_lower);
-  absolute_width = canvas.width / size / pixel_size; //width in px of every "pixel" drawn on canvas
+  size = (size_upper - size_lower) ;
+  absolute_width = ~~(canvas.width / size / pixel_size); //width in px of every "pixel" drawn on canvas
   new_pixels(size_lower, size_lower, size_upper, size_upper);
 }
 
 //-----------------------FUNCTIONS------------------------
 
 function new_pixels(start_x, start_y, width, length) {
-  // console.log({start_x}, {start_y}, {width}, {length})
   absolute_width = (canvas.width / size / pixel_size);
 
   //column
@@ -159,12 +159,12 @@ function new_pixels(start_x, start_y, width, length) {
     
     for (let y = start_y, runs = length; y < runs; y++) {
       matrix_pixels[x][y] = new pixel(
-        x * pixel_size,
-        y * pixel_size,
-        change_hue(x * pixel_size, y * pixel_size),
-        change_saturation(x * pixel_size, y * pixel_size),
-        change_lightness(x * pixel_size, y * pixel_size),
-        pixel_size
+        (x - size_lower) * absolute_width,
+        (y - size_lower) * absolute_width,
+        change_hue(x, y),
+        change_saturation(x, y),
+        change_lightness(x, y),
+        absolute_width
       );
     }
   }
@@ -184,14 +184,13 @@ function new_pixels(start_x, start_y, width, length) {
     }
 
     for (let y = start_x, runs = width; y < runs; y++) {
-
       matrix_pixels[x][y] = new pixel(
-        x * pixel_size,
-        y * pixel_size,
-        change_hue(x * pixel_size, y * pixel_size),
-        change_saturation(x * pixel_size, y * pixel_size),
-        change_lightness(x * pixel_size, y * pixel_size),
-        pixel_size
+        (x - size_lower) * absolute_width,
+        (y - size_lower) * absolute_width,
+        change_hue(x, y),
+        change_saturation(x, y),
+        change_lightness(x, y),
+        absolute_width
       );
     }
   }
@@ -200,28 +199,9 @@ function new_pixels(start_x, start_y, width, length) {
   resizing_img.src = dataURL;
 }
 
-function create_pixels(start, end) {
-  size = size_upper - size_lower;
-  new_pixels(start, start, end, end);
-}
-
-
-function draw(x, y, color) {
-  ctx.fillStyle = color;
-  ctx.fillRect(
-    (x - distance_x) * absolute_width,
-    (y - distance_y) * absolute_width + absolute_width,
-    absolute_width,
-    -(absolute_width)
-  );
-}
-
-
-
-
-function draw_pixels(dimension_start_x, dimension_end_x, dimension_start_y, dimension_end_y) {
-  for (let x = dimension_start_x, width = dimension_end_x; x < width; x++) {
-    for (let y = dimension_start_y, length = dimension_end_y; y < length; y++) {
+function draw_pixels(start_x, width, start_y, length) {
+  for (let x = start_x, runs = width; x < runs; x++) {
+    for (let y = start_y, runs = length; y < runs; y++) {
       matrix_pixels[x][y].tegn();
     }
   }
@@ -470,6 +450,28 @@ function zoom_guider() {
   ctx.stroke();
 }
 
+
+
+
+//REMOVE?
+
+// function create_pixels(start, end) {
+//   size = size_upper - size_lower;
+//   new_pixels(start, start, end, end);
+// }
+
+// function draw(x, y, color) {
+//   ctx.fillStyle = color;
+//   ctx.fillRect(
+//     (x - distance_x) * absolute_width,
+//     (y - distance_y) * absolute_width + absolute_width,
+//     absolute_width,
+//     -(absolute_width)
+//   );
+// }
+
+
+//END OF REMOVE
 
 //------------------START--------------------
 //TO BE USED ANOTHER TIME?
