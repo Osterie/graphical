@@ -7,20 +7,21 @@ const get_lightness_expression = document.getElementById( "lightness_expression"
 const get_size_lower = document.getElementById("size_lower");
 const get_size_upper = document.getElementById("size_upper");
 const get_pixel_size = document.getElementById("pixel_size");
+
 const get_upscale = document.getElementById("upscale");
 
 get_hue_expression.addEventListener("change", function () { hue_expression = get_hue_expression.value; hsl_loop(1); });
 get_saturation_expression.addEventListener("change", function () { saturation_expression = get_saturation_expression.value; hsl_loop(2); });
 get_lightness_expression.addEventListener("change", function () { lightness_expression = get_lightness_expression.value; hsl_loop(3); });
-
 get_size_lower.addEventListener("change", change_size_lower);
 get_size_upper.addEventListener("change", change_size_upper);
 get_pixel_size.addEventListener("change", change_pixel_size);
 
 get_upscale.addEventListener("click", function () {
-  distance_x = size_lower;
-  distance_y = size_lower;
-  absolute_width = canvas.width / size;
+  distance_x = size_lower * pixel_size;
+  distance_y = size_lower * pixel_size;
+  // absolute_width = canvas.width / size;
+  // absolute_width = absolute_width/ pixel_size
   draw_pixels(size_lower, size_upper, size_lower, size_upper);
 });
 
@@ -73,7 +74,7 @@ class pixel {
     this.hue = hue;
     this.saturation = saturation;
     this.lightness = lightness;
-    this.pixel_size = pixel_size;
+    // this.pixel_size = pixel_size;
     this.tegn();
   }
 
@@ -82,8 +83,6 @@ class pixel {
       draw(
         this.xpos,
         this.ypos,
-        this.pixel_size,
-        this.pixel_size,
         `hsl( ${this.hue} , ${this.saturation}% , ${this.lightness}%)`
       );
     } 
@@ -91,8 +90,6 @@ class pixel {
       draw(
         this.xpos,
         this.ypos,
-        this.pixel_size,
-        this.pixel_size,
         `hsl(0, 0%, 0%)`
       );
     }
@@ -127,14 +124,14 @@ function winInit() {
 }
 
 //-----------------------FUNCTIONS------------------------
-
-function draw(x, y, width, heigth, color) {
+// (x) * pixel_size, (y) * pixel_size, change_hue(x * pixel_size, y * pixel_size), change_saturation(x * pixel_size, y * pixel_size), change_lightness(x * pixel_size, y * pixel_size), pixel_size
+function draw(x, y, color) {
   ctx.fillStyle = color;
   ctx.fillRect(
     (x - distance_x) * absolute_width,
     (y - distance_y) * absolute_width + absolute_width,
-    width * absolute_width,
-    -(heigth * absolute_width)
+    absolute_width,
+    -(absolute_width)
   );
 }
 
@@ -165,7 +162,7 @@ function hsl_loop(letter) {
 }
 
 function create_pixels(start, end) {
-  size = (Math.abs(size_lower) + size_upper) / pixel_size;
+  size = (Math.abs(size_lower) + size_upper);
   new_pixels(start, start, end, end);
 }
 
@@ -194,17 +191,16 @@ function change_lightness(x, y) {
 //TODO: turn into 1 function... ?
 
 function change_size_upper() {
-  let new_size = parseInt(get_size_upper.value);
-
+  let new_size = parseInt(get_size_upper.value) / pixel_size;
   switch (true) {
     
     case new_size > size_upper:
       let old_size_upper = size_upper;
       size_upper = new_size;
-      size = (Math.abs(size_lower) + size_upper) / pixel_size;
-      
-      distance_x = size_lower;
-      distance_y = size_lower;
+
+      size = (Math.abs(size_lower) + size_upper);
+      distance_x = size_lower * pixel_size;
+      distance_y = size_lower * pixel_size;
       
       ctx.drawImage(
         resizing_img,
@@ -213,15 +209,17 @@ function change_size_upper() {
         ~~((600 / size) * (size - (new_size - old_size_upper))),
         ~~((600 / size) * (size - (new_size - old_size_upper)))
       );
-
+      
       new_pixels(size_lower, old_size_upper, size_upper, size_upper);
       break;
 
     default:
       size_upper = new_size;
-      distance_x = size_lower;
-      distance_y = size_lower;
-      draw_pixels(size_lower, size_lower, size_upper, size_upper);
+      distance_x = size_lower * pixel_size;
+      distance_y = size_lower * pixel_size;
+      size = (Math.abs(size_lower) + size_upper);
+      absolute_width = canvas.width / size
+      draw_pixels(size_lower, size_upper, size_lower, size_upper);
       break;
   }
 }
@@ -243,22 +241,26 @@ function change_size_lower() {
         ~~((600 / size) * (size - (old_size_lower - new_size)))
       );
 
-      distance_x = size_lower;
-      distance_y = size_lower;
+      distance_x = size_lower * pixel_size;
+      distance_y = size_lower * pixel_size;
       new_pixels(new_size, new_size, old_size_lower, size_upper);
 
       break;
 
     default:
+      
       size_lower = new_size;
-      distance_x = size_lower;
-      distance_y = size_lower;
-      draw_pixels(size_lower, size_lower, size_upper, size_upper);
+      distance_x = size_lower * pixel_size;
+      distance_y = size_lower * pixel_size;
+      size = (Math.abs(size_lower) + size_upper);
+      absolute_width = canvas.width / size
+      draw_pixels(size_lower, size_upper, size_lower, size_upper);
       break;
   }
 }
 
 function change_pixel_size() {
+  
   //Checks if get_pixel_size.value has quotations, having quotations creates a cool effect
   //Because it makes pixel_size a string and not a float
   if (get_pixel_size.value.includes('"')) {
@@ -385,14 +387,16 @@ function zoom_guider() {
 }
 
 function new_pixels(start_x, start_y, width, length) {
-  absolute_width = canvas.width / size;
+  // console.log({start_x}, {start_y}, {width}, {length})
+  absolute_width = (canvas.width / size / pixel_size);
+
   //column
   //width is locally declared as width for improved performance by reducing amount of property lookups
   for (let x = start_x, runs = width; x < runs; x++) {
     if (matrix_pixels[x] == undefined) {
       matrix_pixels[x] = new Array(~~length);
     }
-
+    
     for (let y = start_y, runs = length; y < runs; y++) {
       matrix_pixels[x][y] = new pixel(
         x * pixel_size,
@@ -419,6 +423,7 @@ function new_pixels(start_x, start_y, width, length) {
     }
 
     for (let y = start_x, runs = width; y < runs; y++) {
+
       matrix_pixels[x][y] = new pixel(
         x * pixel_size,
         y * pixel_size,
@@ -458,7 +463,7 @@ function new_pixels(start_x, start_y, width, length) {
 //!HUGE? TODO: use webworkers, ask chat gpt-3 for help
 
 
-//TODO: Minor fix in the new_pixels function, it creates the corner piece twice
+//?WONFIX TODO: Minor fix in the new_pixels function, it creates the corner piece twice
 
 //TODO: Research complex plotting or whatever, make an option to change to using complex numbers?
 
@@ -474,11 +479,11 @@ function new_pixels(start_x, start_y, width, length) {
 //TODO: Create option to make a variable that changes every second f.eks. goes from 1 to 10 then 10 to 1, call it n and then n can be
 // used in the color chooser
 
+
 //TODO: when changing size, the direction of which the new image is drawn in is wrong..
-
 //TODO: Add more color models, i.e rgb and such
-
 //TODO: Make it possible to click a button, or hold down shift, or something, and then be able to hover a pixel, get the position and color(both see the color as a larger image and see the values for the color)?
+
 
 //*------------------------------------------------COMPLETED---------------------------------------
 //* Create variable for width and height of pixels(or just size of pixels), must change array size to compensate
