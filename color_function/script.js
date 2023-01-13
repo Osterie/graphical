@@ -451,8 +451,6 @@ function zoom_guider() {
 }
 
 
-
-
 //REMOVE?
 
 // function create_pixels(start, end) {
