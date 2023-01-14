@@ -28,9 +28,13 @@ get_lightness_expression.addEventListener("change", function () {
   class_method_loop(3);
 });
 get_pixel_ratio.addEventListener("change", function () {
-  pixel_size = +get_pixel_size.value;
+  
+  pixel_ratio = +get_pixel_ratio.value;
+  size_lower = +get_size_lower.value / pixel_ratio;
+  size_upper = +get_size_upper.value / pixel_ratio;
   size = size_upper - size_lower;
-  absolute_width = canvas.width / size / pixel_ratio;
+  absolute_width = canvas.width / size;
+
   change_pixel_ratio();
 });
 get_size_lower.addEventListener("change", function () {
@@ -38,14 +42,14 @@ get_size_lower.addEventListener("change", function () {
   size_lower = +get_size_lower.value / pixel_ratio;
   size = size_upper - size_lower;
   absolute_width = canvas.width / size / pixel_ratio;
-  change_size_lower(old_size);
+  change_size(old_size);
 });
 get_size_upper.addEventListener("change", function () {
   var old_size = size_upper
   size_upper = +get_size_upper.value / pixel_ratio;
   size = size_upper - size_lower;
   absolute_width = canvas.width / size / pixel_ratio;
-  change_size_upper(old_size);
+  change_size(old_size);
 });
 
 get_upscale.addEventListener("click", function () {
@@ -102,7 +106,6 @@ let clicked_released_ypos = [];
 //TODO: when size changes, absolute_widht also changes, and this is the only times that happens
 //! also change size, distance_x and stuff
 
-// var pixel_size =  2
 
 class pixel { 
   constructor(xpos, ypos, hue, saturation, lightness, pixel_size) {
@@ -118,8 +121,6 @@ class pixel {
   tegn() {
     switch (true) {
       case isFinite(this.hue):
-        // console.log(absolute_width, this.xpos)
-        // c(this.xpos)
         this.color = `hsl( ${this.hue} , ${this.saturation}% , ${this.lightness}%)`;
         ctx.fillStyle = this.color;
         ctx.fillRect(this.xpos, this.ypos, absolute_width, absolute_width) ;
@@ -164,8 +165,6 @@ class pixel {
   }
 
 }
-
-
 
 //------------------------INITIALIZATION------------------------
 
@@ -229,10 +228,12 @@ function new_pixels(start_x, start_y, width, length) {
       );
     }
   }
+
   dataURL = canvas.toDataURL();
   original_img.src = dataURL;
   resizing_img.src = dataURL;
 }
+
 function draw_pixels(start_x, width, start_y, length) {
   for (let x = start_x, runs = width; x < runs; x++) {
     for (let y = start_y, runs = length; y < runs; y++) {
@@ -249,7 +250,8 @@ function change_pixel_ratio() {
   //Because it makes pixel_ratio a string and not a float
   if (get_pixel_ratio.value.includes('"')) {
     pixel_ratio = get_pixel_ratio.value.replace(/\"/g, "");
-  } else {
+  } 
+  else {
     pixel_ratio = parseFloat(get_pixel_ratio.value);
   }
   new_pixels(size_lower, size_lower, size_upper, size_upper);
@@ -314,60 +316,33 @@ function change_lightness(x, y) {
   );
 }
 
-//TODO: turn into 1 function... ?
 
-function change_size_upper(old_size) {
-
+function change_size(old_size_bipartite){
+  //old_size_bipartite means its either the old size_lower or old size_upper
   switch (true) {
-    case size_upper > old_size:
 
-      ctx.drawImage(
-        resizing_img,
-        0,
-        0,
-        ~~((600 / size) * (size - (size_upper - old_size))),
-        ~~((600 / size) * (size - (size_upper - old_size)))
-      );
+    //size_upper changed
+    case old_size_bipartite < size_upper && (size+old_size_bipartite) > size:
 
-      new_pixels(size_lower, old_size, size_upper, size_upper);
+      //size of pixel - the old size (abs(size_lower) + abs(size_upper))
+      var image_size = ~~((absolute_width) * (old_size_bipartite - size_lower))
+      ctx.drawImage(resizing_img, 0, 0, image_size, image_size);
+      new_pixels(size_lower, old_size_bipartite, size_upper, size_upper);
+      break;
+
+      //size_lower changed
+    case old_size_bipartite > size_lower && (size+old_size_bipartite) < size :
+        
+      //size of pixel - the old size (abs(size_lower) + abs(size_upper))
+      var distance_from_top_left = ~~(absolute_width) * (old_size_bipartite - size_lower)
+      var image_size = ~~((absolute_width) * (size_upper - old_size_bipartite))
+
+      ctx.drawImage(resizing_img, distance_from_top_left, distance_from_top_left, image_size, image_size);
+      new_pixels(size_lower, size_lower, old_size_bipartite, size_upper);
       break;
 
     default:
-
     draw_pixels(size_lower, size_upper, size_lower, size_upper);
-      
-      // new_pixels(size_lower, size_lower, size_upper, size_upper);
-      break;
-  }
-}
-
-function change_size_lower(old_size) {
-  let new_size = parseInt(get_size_lower.value) / pixel_ratio;
-  switch (true) {
-    case new_size < size_lower:
-      console.log("what");
-      let old_size_lower = size_lower;
-      size_lower = new_size;
-
-      size = size_upper - size_lower;
-
-      ctx.drawImage(
-        resizing_img,
-        (600 / size) * (old_size_lower - new_size),
-        (600 / size) * (old_size_lower - new_size),
-        ~~((600 / size) * (size - (old_size_lower - new_size))),
-        ~~((600 / size) * (size - (old_size_lower - new_size)))
-      );
-
-      distance_x = size_lower * pixel_ratio;
-      distance_y = size_lower * pixel_ratio;
-      new_pixels(new_size, new_size, old_size_lower, size_upper);
-
-      break;
-
-    default:
-
-      draw_pixels(size_lower, size_upper, size_lower, size_upper);
       break;
   }
 }
@@ -488,24 +463,6 @@ function zoom_guider() {
   ctx.stroke();
 }
 
-//REMOVE?
-
-// function create_pixels(start, end) {
-//   size = size_upper - size_lower;
-//   new_pixels(start, start, end, end);
-// }
-
-// function draw(x, y, color) {
-//   ctx.fillStyle = color;
-//   ctx.fillRect(
-//     (x - distance_x) * absolute_width,
-//     (y - distance_y) * absolute_width + absolute_width,
-//     absolute_width,
-//     -(absolute_width)
-//   );
-// }
-
-//END OF REMOVE
 
 //------------------START--------------------
 //TO BE USED ANOTHER TIME?
@@ -562,3 +519,4 @@ function zoom_guider() {
 //* No point in drawing everything of only a small part is shown,
 //* make it so that you can only draw complete pixels with zoom_guider, and only draw and show the pixels "selected"
 //* HUGE create own functions and such instead of using fulabl libraries. Functions to be made self include : tegnFyltRektangel, tegnfirkant, tegnBrukXY, tegnBrukBakgrunn, tegnBrukSynsfelt, tegnBrukCanvas
+//* size_lower_changed and size_upper_changed turned into one function
