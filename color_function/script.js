@@ -34,37 +34,33 @@ get_pixel_ratio.addEventListener("change", function () {
   size_upper = +get_size_upper.value / pixel_ratio;
   size = size_upper - size_lower;
   absolute_width = canvas.width / size;
-
   change_pixel_ratio();
 });
+
 get_size_lower.addEventListener("change", function () {
-  var old_size = size_lower
+  let old_size = size_lower
   size_lower = +get_size_lower.value / pixel_ratio;
   size = size_upper - size_lower;
-  absolute_width = canvas.width / size / pixel_ratio;
-  change_size(old_size);
+  absolute_width = canvas.width / size ;
+  change_size(old_size, 'lower');
 });
+
 get_size_upper.addEventListener("change", function () {
-  var old_size = size_upper
+  let old_size = size_upper
   size_upper = +get_size_upper.value / pixel_ratio;
   size = size_upper - size_lower;
-  absolute_width = canvas.width / size / pixel_ratio;
-  change_size(old_size);
+  absolute_width = canvas.width / size;
+  change_size(old_size, 'higher');
 });
 
 get_upscale.addEventListener("click", function () {
   draw_pixels(size_lower, size_upper, size_lower, size_upper);
+  original_img.src = canvas.toDataURL()
 });
 
 //-----------------------Canvas-----------------------------
 
 let canvas = document.getElementById("canvas");
-canvas.addEventListener("mousedown", function (e) {
-  get_cursor_position(canvas, e);
-});
-canvas.addEventListener("mouseup", function (e) {
-  get_cursor_position(canvas, e);
-});
 const ctx = canvas.getContext("2d", { alpha: false });
 ctx.imageSmoothingEnabled = false;
 // ctx.imageSmoothingQuality = "high"
@@ -79,14 +75,19 @@ let absolute_width;
 var pixel_ratio = parseFloat(get_pixel_ratio.value);
 
 //Distance from top left corner for x and y values
-let distance_x = size_lower;
-let distance_y = size_lower;
 
 let hue_expression = get_hue_expression.value;
 let saturation_expression = get_saturation_expression.value;
 let lightness_expression = get_lightness_expression.value;
 
 //-------------------------------GUIDING BOX FOR RESIZE--------------------
+
+canvas.addEventListener("mousedown", function (e) {
+  get_cursor_position(canvas, e);
+});
+canvas.addEventListener("mouseup", function (e) {
+  get_cursor_position(canvas, e);
+});
 
 //image used for resizing
 let resizing_img;
@@ -103,10 +104,6 @@ let clicked_released_ypos = [];
 
 //----------------------------Classes-------------------------
 
-//TODO: when size changes, absolute_widht also changes, and this is the only times that happens
-//! also change size, distance_x and stuff
-
-
 class pixel { 
   constructor(xpos, ypos, hue, saturation, lightness, pixel_size) {
     this.xpos = xpos;
@@ -121,6 +118,7 @@ class pixel {
   tegn() {
     switch (true) {
       case isFinite(this.hue):
+        console.log(this.xpos)
         this.color = `hsl( ${this.hue} , ${this.saturation}% , ${this.lightness}%)`;
         ctx.fillStyle = this.color;
         ctx.fillRect(this.xpos, this.ypos, absolute_width, absolute_width) ;
@@ -135,32 +133,16 @@ class pixel {
   }
 
   hue_changed(x, y) {
-    this.hue = Function(
-      `return ${hue_expression.replace(/X/g, x).replace(/Y/g, y)}`
-    )();
+    this.hue = Function( `return ${hue_expression.replace(/X/g, x).replace(/Y/g, y)}` )();
     this.tegn();
   }
 
   saturation_changed(x, y) {
-    this.saturation = Math.abs(
-      ((100 +
-        Function(
-          `return ${saturation_expression.replace(/X/g, x).replace(/Y/g, y)}`
-        )()) %
-        200) -
-        100
-    );
+    this.saturation = Math.abs( ((100 + Function( `return ${saturation_expression.replace(/X/g, x).replace(/Y/g, y)}` )()) % 200) - 100 );
     this.tegn();
   }
   lightness_changed(x, y) {
-    this.lightness = Math.abs(
-      ((100 +
-        Function(
-          `return ${lightness_expression.replace(/X/g, x).replace(/Y/g, y)}`
-        )()) %
-        200) -
-        100
-    );
+    this.lightness = Math.abs( ((100 + Function( `return ${lightness_expression.replace(/X/g, x).replace(/Y/g, y)}` )()) % 200) - 100 );
     this.tegn();
   }
 
@@ -170,9 +152,9 @@ class pixel {
 
 window.onload = winInit;
 function winInit() {
-  // ctx.filter = "hue-rotate(200deg)" INTERESTING!
+  // ctx.filter = "hue-rotate(200deg)" //INTERESTING!
   size = size_upper - size_lower;
-  absolute_width = ~~(canvas.width / size / pixel_ratio); //width in px of every "pixel" drawn on canvas
+  absolute_width = ~~(canvas.width / size ); //width in px of every "pixel" drawn on canvas
   new_pixels(size_lower, size_lower, size_upper, size_upper);
 }
 
@@ -182,7 +164,6 @@ function winInit() {
 
 
 function new_pixels(start_x, start_y, width, length) {
-  
 
   //column
   //width is locally declared as width for improved performance by reducing amount of property lookups
@@ -192,12 +173,14 @@ function new_pixels(start_x, start_y, width, length) {
     }
 
     for (let y = start_y, runs = length; y < runs; y++) {
+      let color_x = x * pixel_ratio
+      let color_y = y * pixel_ratio
       matrix_pixels[x][y] = new pixel(
-        (x - size_lower) * absolute_width,
-        (y - size_lower) * absolute_width,
-        change_hue(x, y),
-        change_saturation(x, y),
-        change_lightness(x, y),
+        (x - start_x) * absolute_width,
+        (y - start_x) * absolute_width,
+        change_hue(color_x, color_y),
+        change_saturation(color_x, color_y),
+        change_lightness(color_x, color_y),
         absolute_width
       );
     }
@@ -218,12 +201,14 @@ function new_pixels(start_x, start_y, width, length) {
     }
 
     for (let y = start_x, runs = width; y < runs; y++) {
+      let color_x = x * pixel_ratio
+      let color_y = y * pixel_ratio
       matrix_pixels[x][y] = new pixel(
         (x - size_lower) * absolute_width,
         (y - size_lower) * absolute_width,
-        change_hue(x, y),
-        change_saturation(x, y),
-        change_lightness(x, y),
+        change_hue(color_x, color_y),
+        change_saturation(color_x, color_y),
+        change_lightness(color_x, color_y),
         absolute_width
       );
     }
@@ -237,8 +222,8 @@ function new_pixels(start_x, start_y, width, length) {
 function draw_pixels(start_x, width, start_y, length) {
   for (let x = start_x, runs = width; x < runs; x++) {
     for (let y = start_y, runs = length; y < runs; y++) {
-      matrix_pixels[x][y].xpos = (x - size_lower) * absolute_width;
-      matrix_pixels[x][y].ypos = (y - size_lower) * absolute_width;
+      matrix_pixels[x][y].xpos = (x - start_x) * absolute_width;
+      matrix_pixels[x][y].ypos = (y - start_y) * absolute_width;
       matrix_pixels[x][y].tegn();
     }
   }
@@ -270,16 +255,12 @@ function class_method_loop(letter) {
   else if (letter === 3) {
     var letter_method = pixel.prototype.lightness_changed;
   }
-  //pixel_ratio
 
-  distance_x = size_lower;
-  distance_y = size_lower;
-
-  absolute_width = canvas.width / size / pixel_ratio; //width in px of every "pixel" drawn on canvas
 
   for (let x = size_lower; x < size_upper; x++) {
     for (let y = size_lower; y < size_upper; y++) {
-      letter_method.call(matrix_pixels[x][y], x, y);
+      c(y)
+      letter_method.call(matrix_pixels[x][y], x*pixel_ratio, y*pixel_ratio);
     }
   }
   dataURL = canvas.toDataURL();
@@ -288,51 +269,35 @@ function class_method_loop(letter) {
 }
 
 function change_hue(x, y) {
-  return Function(
-    `return ${hue_expression.replace(/X/g, x).replace(/Y/g, y)}`
-  )();
+  return Function( `return ${hue_expression.replace(/X/g, x).replace(/Y/g, y)}` )();
 }
 
 function change_saturation(x, y) {
   //Sawtooth pattern
-  return Math.abs(
-    ((100 +
-      Function(
-        `return + ${saturation_expression.replace(/X/g, x).replace(/Y/g, y)}`
-      )()) %
-      200) -
-      100
-  );
+  return Math.abs( ((100 + Function( `return + ${saturation_expression.replace(/X/g, x).replace(/Y/g, y)}` )()) % 200) - 100 );
 }
 
 function change_lightness(x, y) {
-  return Math.abs(
-    ((100 +
-      Function(
-        `return + ${lightness_expression.replace(/X/g, x).replace(/Y/g, y)}`
-      )()) %
-      200) -
-      100
+  return Math.abs( ((100 + Function( `return + ${lightness_expression.replace(/X/g, x).replace(/Y/g, y)}` )()) % 200) - 100
   );
 }
 
-
-function change_size(old_size_bipartite){
+function change_size(old_size_bipartite , change){
   //old_size_bipartite means its either the old size_lower or old size_upper
   switch (true) {
 
     //size_upper changed
-    case old_size_bipartite < size_upper && (size+old_size_bipartite) > size:
+    case change === 'higher' && size_upper > old_size_bipartite:
 
-      //size of pixel - the old size (abs(size_lower) + abs(size_upper))
-      var image_size = ~~((absolute_width) * (old_size_bipartite - size_lower))
+    //size of pixel - the old size (abs(size_lower) + abs(size_upper))
+    var image_size = ~~((absolute_width) * (old_size_bipartite - size_lower))
       ctx.drawImage(resizing_img, 0, 0, image_size, image_size);
       new_pixels(size_lower, old_size_bipartite, size_upper, size_upper);
       break;
 
       //size_lower changed
-    case old_size_bipartite > size_lower && (size+old_size_bipartite) < size :
-        
+    case change === 'lower' && size_lower < old_size_bipartite :
+
       //size of pixel - the old size (abs(size_lower) + abs(size_upper))
       var distance_from_top_left = ~~(absolute_width) * (old_size_bipartite - size_lower)
       var image_size = ~~((absolute_width) * (size_upper - old_size_bipartite))
@@ -342,7 +307,9 @@ function change_size(old_size_bipartite){
       break;
 
     default:
-    draw_pixels(size_lower, size_upper, size_lower, size_upper);
+      draw_pixels(size_lower, size_upper, size_lower, size_upper);
+      original_img.src = canvas.toDataURL();
+
       break;
   }
 }
@@ -364,7 +331,10 @@ function get_cursor_position(canvas, event) {
 
     clicked_released_xpos = [down_x];
     clicked_released_ypos = [down_y];
-  } else if (event.type == "mouseup") {
+  } 
+  
+  else if (event.type == "mouseup") {
+
     canvas.removeEventListener("mousemove", zoom_guider);
 
     if (event.ctrlKey) {
@@ -373,34 +343,25 @@ function get_cursor_position(canvas, event) {
       return;
     } else {
       //sorts array from lowest to highest
-      clicked_released_xpos.sort(function (a, b) {
-        return a - b;
-      });
-      clicked_released_ypos.sort(function (a, b) {
-        return a - b;
-      });
+      clicked_released_xpos.sort(function (a, b) {return a - b;});
+      clicked_released_ypos.sort(function (a, b) {return a - b;});
 
-      let start_x =
-        ~~(clicked_released_xpos[0] / absolute_width_pixel) + size_lower;
-      let end_x =
-        ~~(clicked_released_xpos[1] / absolute_width_pixel) + size_lower;
-      let start_y =
-        ~~(clicked_released_ypos[0] / absolute_width_pixel) + size_lower;
-      let end_y =
-        ~~(clicked_released_ypos[1] / absolute_width_pixel) + size_lower;
+      let start_x = ~~(clicked_released_xpos[0] / absolute_width_pixel) + size_lower;
+      let end_x = ~~(clicked_released_xpos[1] / absolute_width_pixel) + size_lower;
+      let start_y = ~~(clicked_released_ypos[0] / absolute_width_pixel) + size_lower;
+      let end_y = ~~(clicked_released_ypos[1] / absolute_width_pixel) + size_lower;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       if (end_x - start_x > end_y - start_y) {
         start_y -= 1;
-      } else if (end_x - start_x < end_y - start_y) {
+      } 
+      else if (end_x - start_x < end_y - start_y) {
         start_x -= 1;
       }
 
       size = end_x - start_x + 1;
-      distance_x = start_x;
-      distance_y = start_y;
-      absolute_width = canvas.width / size / pixel_ratio;
+      absolute_width = canvas.width / size ;
       draw_pixels(start_x, end_x + 1, start_y, end_y + 1);
     }
   }
@@ -414,7 +375,6 @@ function zoom_guider() {
 
   clicked_released_xpos[1] = current_x;
   clicked_released_ypos[1] = current_y;
-  ctx.beginPath();
 
   let height; //Positive values down, negative values up.
   let width; //positive values to the right, negative to the left.
@@ -459,6 +419,7 @@ function zoom_guider() {
   //Draws the guiding box
   clicked_released_xpos[1] = clicked_released_xpos[0] + ~~width;
   clicked_released_ypos[1] = clicked_released_ypos[0] + ~~height;
+  ctx.beginPath();
   ctx.rect(clicked_released_xpos[0], clicked_released_ypos[0], width, height);
   ctx.stroke();
 }
