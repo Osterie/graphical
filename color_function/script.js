@@ -350,7 +350,7 @@ function get_cursor_position(canvas, event) {
     
     else {
       //sorts array from lowest to highest
-      clicked_released_xpos.sort(function (a, b) {return a  b;});
+      clicked_released_xpos.sort(function (a, b) {return a - b;});
       clicked_released_ypos.sort(function (a, b) {return a - b;});
 
       let start_x = ~~(clicked_released_xpos[0] / absolute_width) + size_lower;
@@ -375,6 +375,7 @@ function get_cursor_position(canvas, event) {
 }
 
 function zoom_guider() { 
+
 
   let current_x = event.offsetX;
   let current_y = event.offsetY;
