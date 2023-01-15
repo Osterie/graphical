@@ -223,7 +223,7 @@ function draw_pixels(start_x, width, start_y, length) {
   for (let x = start_x, runs = width; x <= runs; x++) {
     for (let y = start_y, runs = length; y <= runs; y++) {
 
-      matrix_pixels[x][y].xpos = (x - start_x) * absolute_width;
+      matrix_pixels[x][y].xpos = (x  - start_x) * absolute_width;
       matrix_pixels[x][y].ypos = (y - start_y) * absolute_width;
       matrix_pixels[x][y].tegn();
     }
@@ -321,6 +321,7 @@ function change_lightness(x, y) {
 
 //---------------------ZOOMING-------------------
 
+
 function get_cursor_position(canvas, event) {
 
   if (event.type == "mousedown") {
@@ -330,8 +331,9 @@ function get_cursor_position(canvas, event) {
     let down_x = event.offsetX;
     let down_y = event.offsetY;
 
-    clicked_released_xpos = [down_x];
-    clicked_released_ypos = [down_y];
+    //by setting index 0 and 1 to the same, when clicking a pixel you get the color
+    clicked_released_xpos = [down_x, down_x];
+    clicked_released_ypos = [down_y, down_y];
   } 
   
   else if (event.type == "mouseup") {
@@ -348,17 +350,15 @@ function get_cursor_position(canvas, event) {
     
     else {
       //sorts array from lowest to highest
-      clicked_released_xpos.sort(function (a, b) {return a - b;});
+      clicked_released_xpos.sort(function (a, b) {return a  b;});
       clicked_released_ypos.sort(function (a, b) {return a - b;});
 
       let start_x = ~~(clicked_released_xpos[0] / absolute_width) + size_lower;
       let end_x = ~~(clicked_released_xpos[1] / absolute_width) + size_lower;
-      let start_y = -(~~(clicked_released_ypos[1] / absolute_width) + size_lower);
-      let end_y = -(~~(clicked_released_ypos[0] / absolute_width) + size_lower);
 
+      let start_y = (~~(clicked_released_ypos[0] / absolute_width) + size_lower);
+      let end_y = (~~(clicked_released_ypos[1] / absolute_width) + size_lower);
 
-      //TODO: remove me
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       if (end_x - start_x > end_y - start_y) {
         start_y -= 1;
@@ -369,21 +369,15 @@ function get_cursor_position(canvas, event) {
 
       size = end_x - start_x + 1;
       absolute_width = canvas.width / size ;
-
-      draw_pixels(start_x, end_x , -end_y, -start_y);
+      draw_pixels(start_x, end_x , start_y, end_y);
     }
   }
 }
 
-function zoom_guider() {
+function zoom_guider() { 
 
-  ctx.drawImage(resizing_img, 0, 0, 600, 600);
-
-  current_x = event.offsetX;
-  current_y = event.offsetY;
-
-  clicked_released_xpos[1] = current_x;
-  clicked_released_ypos[1] = current_y;
+  let current_x = event.offsetX;
+  let current_y = event.offsetY;
 
   let guiding_box_height; //Positive values down, negative values up.
   let guiding_box_width; //positive values to the right, negative to the left.
@@ -394,6 +388,7 @@ function zoom_guider() {
 
   let distance_from_down_x = Math.abs(current_x - clicked_released_xpos[0])
   let distance_from_down_y =  Math.abs(current_y - clicked_released_ypos[0])
+
 
   if (current_x - clicked_released_xpos[0] > 0) {
     right = true;
@@ -429,13 +424,22 @@ function zoom_guider() {
     }
   }
 
-  //Draws the guiding box
-  clicked_released_xpos[1] = clicked_released_xpos[0] + ~~guiding_box_width;
-  clicked_released_ypos[1] = clicked_released_ypos[0] + ~~guiding_box_height;
 
-  ctx.beginPath();
-  ctx.rect(clicked_released_xpos[0], clicked_released_ypos[0], guiding_box_width, guiding_box_height);
-  ctx.stroke();
+  //Parameters, must be between 0 and canvas.width/heigth
+  let param_x = clicked_released_xpos[0] + ~~guiding_box_width;
+  let param_y = clicked_released_ypos[0] + ~~guiding_box_height;
+
+  //Draws the guiding box
+  if ( (param_x < canvas.width && param_x > 0) && (param_y < canvas.height && param_y > 0 )){
+
+    clicked_released_xpos[1] = param_x;
+    clicked_released_ypos[1] = param_y;
+
+    ctx.drawImage(resizing_img, 0, 0, 600, 600);
+    ctx.beginPath();
+    ctx.rect(clicked_released_xpos[0], clicked_released_ypos[0], guiding_box_width, guiding_box_height);
+    ctx.stroke();
+  }
 }
 
 
