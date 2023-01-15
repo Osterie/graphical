@@ -113,6 +113,7 @@ class pixel {
     this.saturation = saturation;
     this.lightness = lightness;
     absolute_width = pixel_size
+    //FIXME: can probably get away with not changing absolute_width everytime
     this.tegn();
   }
 
@@ -149,9 +150,14 @@ class pixel {
 }
 
 //------------------------INITIALIZATION------------------------
+var lowest_x
+var lowest_y
 
 window.onload = winInit;
 function winInit() {
+  lowest_x = size_lower
+  lowest_y = size_lower
+
   // ctx.filter = "hue-rotate(200deg)" //INTERESTING!
   size = size_upper - size_lower + 1;
   absolute_width = (canvas.width / size ); //width in px of every "pixel" drawn on canvas
@@ -281,6 +287,8 @@ function change_pixel_ratio() {
 
 function class_method_loop(letter) {
   //Hue
+  size = size_upper - size_lower + 1
+  absolute_width = (canvas.width / size )
   if (letter === 1) {
     var letter_method = pixel.prototype.hue_changed;
   }
@@ -294,8 +302,10 @@ function class_method_loop(letter) {
   }
 
 
-  for (let x = size_lower; x < size_upper; x++) {
-    for (let y = size_lower; y < size_upper; y++) {
+  for (let x = size_lower; x <= size_upper; x++) {
+    for (let y = size_lower; y <= size_upper; y++) {
+      matrix_pixels[x][y].xpos = (x  - size_lower) * absolute_width;
+      matrix_pixels[x][y].ypos = (y - size_lower) * absolute_width;
       letter_method.call(matrix_pixels[x][y], x*pixel_ratio, y*pixel_ratio);
     }
   }
@@ -343,6 +353,8 @@ function get_cursor_position(canvas, event) {
     if (event.ctrlKey) {
       size = size_upper - size_lower + 1;
       absolute_width = canvas.width / size;
+      lowest_x = size_lower
+      lowest_y = size_lower
       ctx.drawImage(original_img, 0, 0, 600, 600);
       resizing_img.src = canvas.toDataURL();
       return;
@@ -350,22 +362,30 @@ function get_cursor_position(canvas, event) {
     
     else {
       //sorts array from lowest to highest
+
       clicked_released_xpos.sort(function (a, b) {return a - b;});
       clicked_released_ypos.sort(function (a, b) {return a - b;});
+      //TODO: instead of size_lower, shold be lowest size of current image
+      let start_x = ~~(clicked_released_xpos[0] / absolute_width) + lowest_x;
+      let end_x = ~~(clicked_released_xpos[1] / absolute_width) + lowest_x;
 
-      let start_x = ~~(clicked_released_xpos[0] / absolute_width) + size_lower;
-      let end_x = ~~(clicked_released_xpos[1] / absolute_width) + size_lower;
-
-      let start_y = (~~(clicked_released_ypos[0] / absolute_width) + size_lower);
-      let end_y = (~~(clicked_released_ypos[1] / absolute_width) + size_lower);
+      let start_y = (~~(clicked_released_ypos[0] / absolute_width) + lowest_y);
+      let end_y = (~~(clicked_released_ypos[1] / absolute_width) + lowest_y);
 
 
       if (end_x - start_x > end_y - start_y) {
-        start_y -= 1;
+        if (start_y-1 >= size_lower && start_y-1 <= size_upper){
+          start_y -= 1;
+        }
       } 
       else if (end_x - start_x < end_y - start_y) {
+        if (start_x-1 >= size_lower && start_x-1 <= size_upper){
         start_x -= 1;
+        }
       }
+
+      lowest_x = start_x
+      lowest_y = start_y
 
       size = end_x - start_x + 1;
       absolute_width = canvas.width / size ;
@@ -374,8 +394,8 @@ function get_cursor_position(canvas, event) {
   }
 }
 
-function zoom_guider() { 
 
+function zoom_guider() { 
 
   let current_x = event.offsetX;
   let current_y = event.offsetY;
