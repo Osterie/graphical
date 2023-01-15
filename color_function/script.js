@@ -1,4 +1,5 @@
 //---------------------Accessing DOM elements------------------------
+//TODO: size is only used to change absolute_width
 
 const c =  console.log.bind(console);
 
@@ -30,25 +31,25 @@ get_lightness_expression.addEventListener("change", function () {
 get_pixel_ratio.addEventListener("change", function () {
   
   pixel_ratio = +get_pixel_ratio.value;
-  size_lower = +get_size_lower.value / pixel_ratio;
-  size_upper = +get_size_upper.value / pixel_ratio;
-  size = size_upper - size_lower;
+  size_lower = ~~(+get_size_lower.value / pixel_ratio);
+  size_upper = ~~(+get_size_upper.value / pixel_ratio);
+  size = size_upper - size_lower + 1;
   absolute_width = canvas.width / size;
   change_pixel_ratio();
 });
 
 get_size_lower.addEventListener("change", function () {
   let old_size = size_lower
-  size_lower = +get_size_lower.value / pixel_ratio;
-  size = size_upper - size_lower;
+  size_lower = ~~(+get_size_lower.value / pixel_ratio);
+  size = size_upper - size_lower + 1;
   absolute_width = canvas.width / size ;
   change_size(old_size, 'lower');
 });
 
 get_size_upper.addEventListener("change", function () {
   let old_size = size_upper
-  size_upper = +get_size_upper.value / pixel_ratio;
-  size = size_upper - size_lower;
+  size_upper = ~~(+get_size_upper.value / pixel_ratio);
+  size = size_upper - size_lower + 1;
   absolute_width = canvas.width / size;
   change_size(old_size, 'higher');
 });
@@ -70,7 +71,7 @@ ctx.imageSmoothingEnabled = false;
 let matrix_pixels = [];
 let size_lower = +get_size_lower.value;
 let size_upper = +get_size_upper.value;
-let size = size_upper - size_lower;
+let size = size_upper - size_lower + 1;
 let absolute_width;
 var pixel_ratio = parseFloat(get_pixel_ratio.value);
 
@@ -118,7 +119,6 @@ class pixel {
   tegn() {
     switch (true) {
       case isFinite(this.hue):
-        console.log(this.xpos)
         this.color = `hsl( ${this.hue} , ${this.saturation}% , ${this.lightness}%)`;
         ctx.fillStyle = this.color;
         ctx.fillRect(this.xpos, this.ypos, absolute_width, absolute_width) ;
@@ -153,8 +153,8 @@ class pixel {
 window.onload = winInit;
 function winInit() {
   // ctx.filter = "hue-rotate(200deg)" //INTERESTING!
-  size = size_upper - size_lower;
-  absolute_width = ~~(canvas.width / size ); //width in px of every "pixel" drawn on canvas
+  size = size_upper - size_lower + 1;
+  absolute_width = (canvas.width / size ); //width in px of every "pixel" drawn on canvas
   new_pixels(size_lower, size_lower, size_upper, size_upper);
 }
 
@@ -164,15 +164,14 @@ function winInit() {
 
 
 function new_pixels(start_x, start_y, width, length) {
-
   //column
   //width is locally declared as width for improved performance by reducing amount of property lookups
-  for (let x = start_x, runs = width; x < runs; x++) {
+  for (let x = start_x, runs = width; x <= runs; x++) {
     if (matrix_pixels[x] == undefined) {
       matrix_pixels[x] = new Array(~~length);
     }
 
-    for (let y = start_y, runs = length; y < runs; y++) {
+    for (let y = start_y, runs = length; y <= runs; y++) {
       let color_x = x * pixel_ratio
       let color_y = y * pixel_ratio
       matrix_pixels[x][y] = new pixel(
@@ -194,15 +193,16 @@ function new_pixels(start_x, start_y, width, length) {
   }
 
   // row
-  for (let x = start_y, runs = length; x < runs; x++) {
+  for (let x = start_y, runs = length; x <= runs; x++) {
     if (matrix_pixels[x] == undefined) {
       matrix_pixels[x] = [];
       // matrix_pixels[x] = new Array(~~width);
     }
 
-    for (let y = start_x, runs = width; y < runs; y++) {
+    for (let y = start_x, runs = width; y <= runs; y++) {
       let color_x = x * pixel_ratio
       let color_y = y * pixel_ratio
+
       matrix_pixels[x][y] = new pixel(
         (x - size_lower) * absolute_width,
         (y - size_lower) * absolute_width,
@@ -220,15 +220,50 @@ function new_pixels(start_x, start_y, width, length) {
 }
 
 function draw_pixels(start_x, width, start_y, length) {
-  for (let x = start_x, runs = width; x < runs; x++) {
-    for (let y = start_y, runs = length; y < runs; y++) {
+  console.log(start_x)
+  for (let x = start_x, runs = width; x <= runs; x++) {
+    for (let y = start_y, runs = length; y <= runs; y++) {
+      // console.log(x)
       matrix_pixels[x][y].xpos = (x - start_x) * absolute_width;
-      matrix_pixels[x][y].ypos = (y - start_y) * absolute_width;
+      matrix_pixels[x][y].ypos = (y - start_x) * absolute_width;
       matrix_pixels[x][y].tegn();
     }
   }
   resizing_img.src = canvas.toDataURL();
 }
+
+function change_size(old_size_bipartite , change){
+  //old_size_bipartite means its either the old size_lower or old size_upper
+  switch (true) {
+
+    //size_upper changed
+    case change === 'higher' && size_upper > old_size_bipartite:
+      
+      //size of pixel - the old size (abs(size_lower) + abs(size_upper))
+      var image_size = ~~((absolute_width) * (old_size_bipartite - size_lower))
+      ctx.drawImage(resizing_img, 0, 0, image_size, image_size);
+      new_pixels(size_lower, old_size_bipartite, size_upper, size_upper);
+      break;
+
+      //size_lower changed
+    case change === 'lower' && size_lower < old_size_bipartite :
+
+      //size of pixel - the old size (abs(size_lower) + abs(size_upper))
+      var distance_from_top_left = ~~(absolute_width) * (old_size_bipartite - size_lower)
+      var image_size = ~~((absolute_width) * (size_upper - old_size_bipartite))
+
+      ctx.drawImage(resizing_img, distance_from_top_left, distance_from_top_left, image_size, image_size);
+      new_pixels(size_lower, size_lower, old_size_bipartite, size_upper);
+      break;
+
+    default:
+      draw_pixels(size_lower, size_upper, size_lower, size_upper);
+      original_img.src = canvas.toDataURL();
+
+      break;
+  }
+}
+
 
 function change_pixel_ratio() {
   //Checks if get_pixel_ratio.value has quotations, having quotations creates a cool effect
@@ -259,7 +294,6 @@ function class_method_loop(letter) {
 
   for (let x = size_lower; x < size_upper; x++) {
     for (let y = size_lower; y < size_upper; y++) {
-      c(y)
       letter_method.call(matrix_pixels[x][y], x*pixel_ratio, y*pixel_ratio);
     }
   }
@@ -282,42 +316,11 @@ function change_lightness(x, y) {
   );
 }
 
-function change_size(old_size_bipartite , change){
-  //old_size_bipartite means its either the old size_lower or old size_upper
-  switch (true) {
-
-    //size_upper changed
-    case change === 'higher' && size_upper > old_size_bipartite:
-
-    //size of pixel - the old size (abs(size_lower) + abs(size_upper))
-    var image_size = ~~((absolute_width) * (old_size_bipartite - size_lower))
-      ctx.drawImage(resizing_img, 0, 0, image_size, image_size);
-      new_pixels(size_lower, old_size_bipartite, size_upper, size_upper);
-      break;
-
-      //size_lower changed
-    case change === 'lower' && size_lower < old_size_bipartite :
-
-      //size of pixel - the old size (abs(size_lower) + abs(size_upper))
-      var distance_from_top_left = ~~(absolute_width) * (old_size_bipartite - size_lower)
-      var image_size = ~~((absolute_width) * (size_upper - old_size_bipartite))
-
-      ctx.drawImage(resizing_img, distance_from_top_left, distance_from_top_left, image_size, image_size);
-      new_pixels(size_lower, size_lower, old_size_bipartite, size_upper);
-      break;
-
-    default:
-      draw_pixels(size_lower, size_upper, size_lower, size_upper);
-      original_img.src = canvas.toDataURL();
-
-      break;
-  }
-}
 
 //---------------------ZOOMING-------------------
 
 function get_cursor_position(canvas, event) {
-  size = size_upper - size_lower;
+  size = size_upper - size_lower + 1;
 
   let absolute_width_pixel = canvas.width / size;
   // let absolute_heigth_pixel = canvas.height / size;
