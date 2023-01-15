@@ -220,46 +220,48 @@ function new_pixels(start_x, start_y, width, length) {
 }
 
 function draw_pixels(start_x, width, start_y, length) {
-  console.log(start_x)
   for (let x = start_x, runs = width; x <= runs; x++) {
     for (let y = start_y, runs = length; y <= runs; y++) {
-      // console.log(x)
+
       matrix_pixels[x][y].xpos = (x - start_x) * absolute_width;
-      matrix_pixels[x][y].ypos = (y - start_x) * absolute_width;
+      matrix_pixels[x][y].ypos = (y - start_y) * absolute_width;
       matrix_pixels[x][y].tegn();
     }
   }
   resizing_img.src = canvas.toDataURL();
 }
 
+//TODO: is resizing_img needed?
+
 function change_size(old_size_bipartite , change){
   //old_size_bipartite means its either the old size_lower or old size_upper
   switch (true) {
 
     //size_upper changed
-    case change === 'higher' && size_upper > old_size_bipartite:
-      
-      //size of pixel - the old size (abs(size_lower) + abs(size_upper))
-      var image_size = ~~((absolute_width) * (old_size_bipartite - size_lower))
+    case change === 'higher' && size_upper >= old_size_bipartite:
+    //size of pixel - the old size (abs(size_lower) + abs(size_upper))
+      var image_size = ~~((absolute_width) * (old_size_bipartite+1 - size_lower))
       ctx.drawImage(resizing_img, 0, 0, image_size, image_size);
-      new_pixels(size_lower, old_size_bipartite, size_upper, size_upper);
+      new_pixels(size_lower, old_size_bipartite+1, size_upper, size_upper);
       break;
 
-      //size_lower changed
-    case change === 'lower' && size_lower < old_size_bipartite :
+
+    //size_lower changed
+    case change === 'lower' && size_lower <= old_size_bipartite :
 
       //size of pixel - the old size (abs(size_lower) + abs(size_upper))
       var distance_from_top_left = ~~(absolute_width) * (old_size_bipartite - size_lower)
-      var image_size = ~~((absolute_width) * (size_upper - old_size_bipartite))
+      var image_size = ~~((absolute_width) * (size_upper - old_size_bipartite + 1 ))
 
       ctx.drawImage(resizing_img, distance_from_top_left, distance_from_top_left, image_size, image_size);
-      new_pixels(size_lower, size_lower, old_size_bipartite, size_upper);
+      new_pixels(size_lower, size_lower, old_size_bipartite-1, size_upper);
       break;
 
+    //size_upper has decreased or size_lower has increased
     default:
+
       draw_pixels(size_lower, size_upper, size_lower, size_upper);
       original_img.src = canvas.toDataURL();
-
       break;
   }
 }
@@ -320,10 +322,6 @@ function change_lightness(x, y) {
 //---------------------ZOOMING-------------------
 
 function get_cursor_position(canvas, event) {
-  size = size_upper - size_lower + 1;
-
-  let absolute_width_pixel = canvas.width / size;
-  // let absolute_heigth_pixel = canvas.height / size;
 
   if (event.type == "mousedown") {
     canvas.addEventListener("mousemove", zoom_guider);
@@ -341,19 +339,25 @@ function get_cursor_position(canvas, event) {
     canvas.removeEventListener("mousemove", zoom_guider);
 
     if (event.ctrlKey) {
+      size = size_upper - size_lower + 1;
+      absolute_width = canvas.width / size;
       ctx.drawImage(original_img, 0, 0, 600, 600);
       resizing_img.src = canvas.toDataURL();
       return;
-    } else {
+    } 
+    
+    else {
       //sorts array from lowest to highest
       clicked_released_xpos.sort(function (a, b) {return a - b;});
       clicked_released_ypos.sort(function (a, b) {return a - b;});
 
-      let start_x = ~~(clicked_released_xpos[0] / absolute_width_pixel) + size_lower;
-      let end_x = ~~(clicked_released_xpos[1] / absolute_width_pixel) + size_lower;
-      let start_y = ~~(clicked_released_ypos[0] / absolute_width_pixel) + size_lower;
-      let end_y = ~~(clicked_released_ypos[1] / absolute_width_pixel) + size_lower;
+      let start_x = ~~(clicked_released_xpos[0] / absolute_width) + size_lower;
+      let end_x = ~~(clicked_released_xpos[1] / absolute_width) + size_lower;
+      let start_y = -(~~(clicked_released_ypos[1] / absolute_width) + size_lower);
+      let end_y = -(~~(clicked_released_ypos[0] / absolute_width) + size_lower);
 
+
+      //TODO: remove me
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       if (end_x - start_x > end_y - start_y) {
@@ -365,12 +369,14 @@ function get_cursor_position(canvas, event) {
 
       size = end_x - start_x + 1;
       absolute_width = canvas.width / size ;
-      draw_pixels(start_x, end_x + 1, start_y, end_y + 1);
+
+      draw_pixels(start_x, end_x , -end_y, -start_y);
     }
   }
 }
 
 function zoom_guider() {
+
   ctx.drawImage(resizing_img, 0, 0, 600, 600);
 
   current_x = event.offsetX;
@@ -379,12 +385,15 @@ function zoom_guider() {
   clicked_released_xpos[1] = current_x;
   clicked_released_ypos[1] = current_y;
 
-  let height; //Positive values down, negative values up.
-  let width; //positive values to the right, negative to the left.
+  let guiding_box_height; //Positive values down, negative values up.
+  let guiding_box_width; //positive values to the right, negative to the left.
 
   //checks where current x and y pos are in relation to down_x and down_y
   let right = false;
   let above = false;
+
+  let distance_from_down_x = Math.abs(current_x - clicked_released_xpos[0])
+  let distance_from_down_y =  Math.abs(current_y - clicked_released_ypos[0])
 
   if (current_x - clicked_released_xpos[0] > 0) {
     right = true;
@@ -394,36 +403,38 @@ function zoom_guider() {
     above = true;
   }
 
+  //current mouse position is in top right or bottom left quadrant
   if ((right && above) || (!right && !above)) {
     //FIXME: Super chunky and ugly
-    if (
-      Math.abs(current_x - clicked_released_xpos[0]) >
-      Math.abs(current_y - clicked_released_ypos[0])
-    ) {
-      width = current_x - clicked_released_xpos[0];
-      height = -(current_x - clicked_released_xpos[0]);
-    } else {
-      width = -(current_y - clicked_released_ypos[0]);
-      height = current_y - clicked_released_ypos[0];
+    if (distance_from_down_x > distance_from_down_y) {
+      guiding_box_width  = current_x - clicked_released_xpos[0];
+      guiding_box_height = clicked_released_xpos[0] - current_x;
+    } 
+    
+    else {
+      guiding_box_width = clicked_released_ypos[0] - current_y;
+      guiding_box_height = current_y - clicked_released_ypos[0];
     }
-  } else if ((right && !above) || (!right && above)) {
-    if (
-      Math.abs(current_x - clicked_released_xpos[0]) >
-      Math.abs(current_y - clicked_released_ypos[0])
-    ) {
-      width = current_x - clicked_released_xpos[0];
-      height = current_x - clicked_released_xpos[0];
-    } else {
-      width = current_y - clicked_released_ypos[0];
-      height = current_y - clicked_released_ypos[0];
+  } 
+  
+  else if ((right && !above) || (!right && above)) {
+    
+    if (distance_from_down_x > distance_from_down_y) {
+      guiding_box_width  = current_x - clicked_released_xpos[0];
+      guiding_box_height = current_x - clicked_released_xpos[0];
+    } 
+    else {
+      guiding_box_width  = current_y - clicked_released_ypos[0];
+      guiding_box_height = current_y - clicked_released_ypos[0];
     }
   }
 
   //Draws the guiding box
-  clicked_released_xpos[1] = clicked_released_xpos[0] + ~~width;
-  clicked_released_ypos[1] = clicked_released_ypos[0] + ~~height;
+  clicked_released_xpos[1] = clicked_released_xpos[0] + ~~guiding_box_width;
+  clicked_released_ypos[1] = clicked_released_ypos[0] + ~~guiding_box_height;
+
   ctx.beginPath();
-  ctx.rect(clicked_released_xpos[0], clicked_released_ypos[0], width, height);
+  ctx.rect(clicked_released_xpos[0], clicked_released_ypos[0], guiding_box_width, guiding_box_height);
   ctx.stroke();
 }
 
