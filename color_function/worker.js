@@ -26,7 +26,7 @@ function computePixels(start_x, start_y, width, length, pixel_ratio, absolute_wi
       let color_y = y * pixel_ratio
       matrix_pixels[x][y] = new Pixel(
         (x - start_x) * absolute_width,
-        (y - start_x) * absolute_width,
+        (y - start_y) * absolute_width,
         set_hue(hue, color_x, color_y),
         set_saturation(saturation, color_x, color_y),
         set_lightness(lightness, color_x, color_y),
@@ -54,8 +54,8 @@ function computePixels(start_x, start_y, width, length, pixel_ratio, absolute_wi
       let color_y = y * pixel_ratio
 
       matrix_pixels[x][y] = new Pixel(
-        (x - size_lower) * absolute_width,
-        (y - size_lower) * absolute_width,
+        (x - start_x) * absolute_width,
+        (y - start_y) * absolute_width,
         set_hue(hue, color_x, color_y),
         set_saturation(saturation, color_x, color_y),
         set_lightness(lightness, color_x, color_y),
@@ -64,9 +64,6 @@ function computePixels(start_x, start_y, width, length, pixel_ratio, absolute_wi
     }
   }
 
-  dataURL = canvas.toDataURL();
-  original_img.src = dataURL;
-  resizing_img.src = dataURL;
   return matrix_pixels;
 }
 

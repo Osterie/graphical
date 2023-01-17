@@ -1,8 +1,5 @@
 //---------------------Accessing DOM elements------------------------
 //TODO: size is only used to change absolute_width
-//TODO: make functions and such more general! for example make a function that returns matrix_squares
-
-let worker = new Worker("worker.js");
 
 const c =  console.log.bind(console);
 
@@ -32,7 +29,7 @@ get_lightness_expression.addEventListener("change", function () {
   class_method_loop(3);
 });
 get_pixel_ratio.addEventListener("change", function () {
-
+  
   pixel_ratio = +get_pixel_ratio.value;
   size_lower = ~~(+get_size_lower.value / pixel_ratio);
   size_upper = ~~(+get_size_upper.value / pixel_ratio);
@@ -106,9 +103,53 @@ let dataURL2;
 let clicked_released_xpos = [];
 let clicked_released_ypos = [];
 
-//------------------------INITIALIZATION------------------------
+//----------------------------Classes-------------------------
 
-//FIXME: better name/solution or global variable at top.
+class pixel { 
+  constructor(xpos, ypos, hue, saturation, lightness, pixel_size) {
+    this.xpos = xpos;
+    this.ypos = ypos;
+    this.hue = hue;
+    this.saturation = saturation;
+    this.lightness = lightness;
+    absolute_width = pixel_size
+    //FIXME: can probably get away with not changing absolute_width everytime
+    this.tegn();
+  }
+
+  tegn() {
+    switch (true) {
+      case isFinite(this.hue):
+        this.color = `hsl( ${this.hue} , ${this.saturation}% , ${this.lightness}%)`;
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.xpos, this.ypos, absolute_width, absolute_width) ;
+        break;
+
+      default:
+        this.color = `hsl(0, 0%, 0%)`;
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.xpos, this.ypos, absolute_width, absolute_width) ;
+        break;
+    }
+  }
+
+  hue_changed(x, y) {
+    this.hue = Function( `return ${hue_expression.replace(/X/g, x).replace(/Y/g, y)}` )();
+    this.tegn();
+  }
+
+  saturation_changed(x, y) {
+    this.saturation = Math.abs( ((100 + Function( `return ${saturation_expression.replace(/X/g, x).replace(/Y/g, y)}` )()) % 200) - 100 );
+    this.tegn();
+  }
+  lightness_changed(x, y) {
+    this.lightness = Math.abs( ((100 + Function( `return ${lightness_expression.replace(/X/g, x).replace(/Y/g, y)}` )()) % 200) - 100 );
+    this.tegn();
+  }
+
+}
+
+//------------------------INITIALIZATION------------------------
 var lowest_x
 var lowest_y
 
@@ -118,7 +159,6 @@ function winInit() {
   lowest_y = size_lower
 
   // ctx.filter = "hue-rotate(200deg)" //INTERESTING!
-  // ctx.filter = "drop-shadow(16px 16px 20px red) invert(75%)";
   size = size_upper - size_lower + 1;
   absolute_width = (canvas.width / size ); //width in px of every "pixel" drawn on canvas
   new_pixels(size_lower, size_lower, size_upper, size_upper);
@@ -130,136 +170,62 @@ function winInit() {
 
 
 function new_pixels(start_x, start_y, width, length) {
+  //column
+  //width is locally declared as width for improved performance by reducing amount of property lookups
+  for (let x = start_x, runs = width; x <= runs; x++) {
+    if (matrix_pixels[x] == undefined) {
+      matrix_pixels[x] = new Array(~~length);
+    }
 
-  let worker = new Worker("worker.js");
-  let data = {absolute_width: absolute_width, pixel_ratio: pixel_ratio, 
-    start_x: start_x, start_y: start_y, width: width, length: length,
-    hue: hue_expression,
-    saturation: saturation_expression,
-    lightness: lightness_expression,
-   };
-  worker.postMessage(data);
-  worker.onmessage = function(e) {
-    // console.log(e)
-    let result = e.data;
-    matrix_pixels = result;
-    // draw_pixels()
-    // render();
-    // console.log(e.data[0][0] instanceof Pixel)
-    draw_test(size_lower, size_lower, size_upper, size_upper)
+    for (let y = start_y, runs = length; y <= runs; y++) {
+      let color_x = x * pixel_ratio
+      let color_y = y * pixel_ratio
+      matrix_pixels[x][y] = new pixel(
+        (x - start_x) * absolute_width,
+        (y - start_x) * absolute_width,
+        change_hue(color_x, color_y),
+        change_saturation(color_x, color_y),
+        change_lightness(color_x, color_y),
+        absolute_width
+      );
+    }
+  }
 
+  if (start_x == start_y && width == length) {
     dataURL = canvas.toDataURL();
     original_img.src = dataURL;
     resizing_img.src = dataURL;
+    return;
   }
 
-  //column
-  //width is locally declared as width for improved performance by reducing amount of property lookups
-    // for (let x = start_x, runs = width; x <= runs; x++) {
-    //   if (matrix_pixels[x] == undefined) {
-    //     matrix_pixels[x] = new Array(~~length);
-    //   }
+  // row
+  for (let x = start_y, runs = length; x <= runs; x++) {
+    if (matrix_pixels[x] == undefined) {
+      matrix_pixels[x] = [];
+      // matrix_pixels[x] = new Array(~~width);
+    }
 
-    //   for (let y = start_y, runs = length; y <= runs; y++) {
+    for (let y = start_x, runs = width; y <= runs; y++) {
+      let color_x = x * pixel_ratio
+      let color_y = y * pixel_ratio
 
-    //     let color_x = x * pixel_ratio
-    //     let color_y = y * pixel_ratio
-    //     matrix_pixels[x][y] = new Pixel(
-    //       (x - start_x) * absolute_width,
-    //       (y - start_x) * absolute_width,
-    //       change_hue(hue_expression, color_x, color_y),
-    //       change_saturation(saturation_expression, color_x, color_y),
-    //       change_lightness(lightness_expression, color_x, color_y),
-    //       absolute_width
-    //     );
-    //   }
-    // }
+      matrix_pixels[x][y] = new pixel(
+        (x - size_lower) * absolute_width,
+        (y - size_lower) * absolute_width,
+        change_hue(color_x, color_y),
+        change_saturation(color_x, color_y),
+        change_lightness(color_x, color_y),
+        absolute_width
+      );
+    }
+  }
 
-    // if (start_x == start_y && width == length) {
-    //   dataURL = canvas.toDataURL();
-    //   original_img.src = dataURL;
-    //   resizing_img.src = dataURL;
-    //   return;
-    // }
-
-    // // row
-    // for (let x = start_y, runs = length; x <= runs; x++) {
-    //   if (matrix_pixels[x] == undefined) {
-    //     matrix_pixels[x] = [];
-    //     // matrix_pixels[x] = new Array(~~width);
-    //   }
-
-    //   for (let y = start_x, runs = width; y <= runs; y++) {
-    //     let color_x = x * pixel_ratio
-    //     let color_y = y * pixel_ratio
-
-    //     matrix_pixels[x][y] = new Pixel(
-    //       (x - size_lower) * absolute_width,
-    //       (y - size_lower) * absolute_width,
-    //       change_hue(color_x, color_y),
-    //       change_saturation(color_x, color_y),
-    //       change_lightness(color_x, color_y),
-    //       absolute_width
-    //     );
-    //   }
-    // }
-
-    // dataURL = canvas.toDataURL();
-    // original_img.src = dataURL;
-    // resizing_img.src = dataURL;
+  dataURL = canvas.toDataURL();
+  original_img.src = dataURL;
+  resizing_img.src = dataURL;
 }
-
-function draw_test(start_x, start_y, width, length) {
-
-  //column
-  //width is locally declared as width for improved performance by reducing amount of property lookups
-    for (let x = start_x, runs = width; x <= runs; x++) {
-      for (let y = start_y, runs = length; y <= runs; y++) {
-        // let color_x = x * pixel_ratio
-        // let color_y = y * pixel_ratio
-
-        // console.log(matrix_pixels[x][y] instanceof Pixel)
-        // matrix_pixels[x][y].tegn()
-        
-        switch (true) {
-          case isFinite(matrix_pixels[x][y].hue):
-            color = `hsl( ${matrix_pixels[x][y].hue} , ${matrix_pixels[x][y].saturation}% , ${matrix_pixels[x][y].lightness}%)`;
-            ctx.fillStyle = color;
-            ctx.fillRect(matrix_pixels[x][y].xpos, matrix_pixels[x][y].ypos, matrix_pixels[x][y].absolute_width, matrix_pixels[x][y].absolute_width) ;
-            break;
-    
-          default:
-            color = `hsl(0, 0%, 0%)`;
-            ctx.fillStyle = color;
-            ctx.fillRect(matrix_pixels[x][y].xpos, matrix_pixels[x][y].ypos, matrix_pixels[x][y].absolute_width, matrix_pixels[x][y].absolute_width) ;
-            break;
-          }
-        }      
-    }
-
-    if (start_x == start_y && width == length) {
-      dataURL = canvas.toDataURL();
-      original_img.src = dataURL;
-      resizing_img.src = dataURL;
-      return;
-    }
-
-    // row
-    for (let x = start_y, runs = length; x <= runs; x++) {
-      for (let y = start_x, runs = width; y <= runs; y++) {
-
-
-        matrix_pixels[x][y].tegn()
-      }
-    }
-}
-
 
 function draw_pixels(start_x, width, start_y, length) {
-  //clears canvas
-  // ctx.clearRect(0, 0, canvas.width, canvas.height);
-  
-  //redraws pixels on canvas
   for (let x = start_x, runs = width; x <= runs; x++) {
     for (let y = start_y, runs = length; y <= runs; y++) {
 
@@ -312,7 +278,7 @@ function change_pixel_ratio() {
   //Because it makes pixel_ratio a string and not a float
   if (get_pixel_ratio.value.includes('"')) {
     pixel_ratio = get_pixel_ratio.value.replace(/\"/g, "");
-  }
+  } 
   else {
     pixel_ratio = parseFloat(get_pixel_ratio.value);
   }
@@ -348,17 +314,17 @@ function class_method_loop(letter) {
   resizing_img.src = dataURL;
 }
 
-function change_hue(expression, x, y) {
-  return Function( `return ${expression.replace(/X/g, x).replace(/Y/g, y)}` )();
+function change_hue(x, y) {
+  return Function( `return ${hue_expression.replace(/X/g, x).replace(/Y/g, y)}` )();
 }
 
-function change_saturation(expression, x, y) {
+function change_saturation(x, y) {
   //Sawtooth pattern
-  return Math.abs( ((100 + Function( `return + ${expression.replace(/X/g, x).replace(/Y/g, y)}` )()) % 200) - 100 );
+  return Math.abs( ((100 + Function( `return + ${saturation_expression.replace(/X/g, x).replace(/Y/g, y)}` )()) % 200) - 100 );
 }
 
-function change_lightness(expression, x, y) {
-  return Math.abs( ((100 + Function( `return + ${expression.replace(/X/g, x).replace(/Y/g, y)}` )()) % 200) - 100
+function change_lightness(x, y) {
+  return Math.abs( ((100 + Function( `return + ${lightness_expression.replace(/X/g, x).replace(/Y/g, y)}` )()) % 200) - 100
   );
 }
 
@@ -378,8 +344,8 @@ function get_cursor_position(canvas, event) {
     //by setting index 0 and 1 to the same, when clicking a pixel you get the color
     clicked_released_xpos = [down_x, down_x];
     clicked_released_ypos = [down_y, down_y];
-  }
-
+  } 
+  
   else if (event.type == "mouseup") {
 
     canvas.removeEventListener("mousemove", zoom_guider);
@@ -392,8 +358,8 @@ function get_cursor_position(canvas, event) {
       ctx.drawImage(original_img, 0, 0, 600, 600);
       resizing_img.src = canvas.toDataURL();
       return;
-    }
-
+    } 
+    
     else {
       //sorts array from lowest to highest
 
@@ -411,7 +377,7 @@ function get_cursor_position(canvas, event) {
         if (start_y-1 >= size_lower && start_y-1 <= size_upper){
           start_y -= 1;
         }
-      }
+      } 
       else if (end_x - start_x < end_y - start_y) {
         if (start_x-1 >= size_lower && start_x-1 <= size_upper){
         start_x -= 1;
@@ -429,7 +395,7 @@ function get_cursor_position(canvas, event) {
 }
 
 
-function zoom_guider() {
+function zoom_guider() { 
 
   let current_x = event.offsetX;
   let current_y = event.offsetY;
@@ -459,20 +425,20 @@ function zoom_guider() {
     if (distance_from_down_x > distance_from_down_y) {
       guiding_box_width  = current_x - clicked_released_xpos[0];
       guiding_box_height = clicked_released_xpos[0] - current_x;
-    }
-
+    } 
+    
     else {
       guiding_box_width = clicked_released_ypos[0] - current_y;
       guiding_box_height = current_y - clicked_released_ypos[0];
     }
-  }
-
+  } 
+  
   else if ((right && !above) || (!right && above)) {
-
+    
     if (distance_from_down_x > distance_from_down_y) {
       guiding_box_width  = current_x - clicked_released_xpos[0];
       guiding_box_height = current_x - clicked_released_xpos[0];
-    }
+    } 
     else {
       guiding_box_width  = current_y - clicked_released_ypos[0];
       guiding_box_height = current_y - clicked_released_ypos[0];
@@ -546,7 +512,7 @@ function zoom_guider() {
 //* Create vector to angle function and make it usable in hue, saturation and color variables. Works for radians and degrees!
 //* Make a smooth tranistion for saturation and lighness
 //* Maybe will have to, but make a "enhance" button, if the image is unclear, it should be possible to redraw every pixel
-//* It is probably faster/more efficient to just change color of all pixels when changing color, instead of creating new Pixels
+//* It is probably faster/more efficient to just change color of all pixels when changing color, instead of creating new pixels
 //* Use same draw image method for zoom_outline
 //* Fix: pixel_ratio creates a bug when changing size
 //* Fix: dont need to make new Image() everytime resizing_img is declared or whatever
