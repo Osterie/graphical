@@ -1,3 +1,5 @@
+
+//Returns angle between two vectors, unit can be "deg" or radians
 function v2a(vector1, vector2, unit) {
     vector1_length = Math.sqrt(vector1[0] ** 2 + vector1[1] ** 2);
     vector2_length = Math.sqrt(vector2[0] ** 2 + vector2[1] ** 2);
