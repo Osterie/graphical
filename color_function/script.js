@@ -14,27 +14,43 @@ const get_upscale_button = document.getElementById("upscale");
 
 get_hue_expression.addEventListener("change", function () {
   hue_expression = get_hue_expression.value;
-
+  matrix_squares.hue_expression = hue_expression
   matrix_squares.class_method_loop("hue", hue_expression);
+  dataURL = canvas.toDataURL();
+  original_img.src = dataURL;
+  resizing_img.src = dataURL;
 });
+
 get_saturation_expression.addEventListener("change", function () {
   saturation_expression = get_saturation_expression.value;
-
+  matrix_squares.saturation_expression = saturation_expression
   matrix_squares.class_method_loop("saturation", saturation_expression);
+  dataURL = canvas.toDataURL();
+  original_img.src = dataURL;
+  resizing_img.src = dataURL;
 });
+
 get_lightness_expression.addEventListener("change", function () {
   lightness_expression = get_lightness_expression.value;
-
+  matrix_squares.lightness_expression = lightness_expression
   matrix_squares.class_method_loop("lightness", lightness_expression);
+  dataURL = canvas.toDataURL();
+  original_img.src = dataURL;
+  resizing_img.src = dataURL;
 });
 
 get_pixel_ratio.addEventListener("change", function () {
   pixel_ratio = +get_pixel_ratio.value;
-  size_lower = ~~(+get_size_lower.value / pixel_ratio);
   size_upper = ~~(+get_size_upper.value / pixel_ratio);
+  size_lower = ~~(+get_size_lower.value / pixel_ratio);
   size = size_upper - size_lower + 1;
   absolute_width = canvas.width / size;
-  change_pixel_ratio();
+  distance_left_x_zooming = size_lower
+  distance_top_y_zooming = size_lower
+  matrix_squares.create_squares(size_lower, size_lower, size_upper, size_upper, absolute_width, pixel_ratio)
+  dataURL = canvas.toDataURL();
+  original_img.src = dataURL;
+  resizing_img.src = dataURL;
 });
 
 get_size_lower.addEventListener("change", function () {
@@ -64,7 +80,9 @@ get_upscale_button.addEventListener("click", function () {
 
 let canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d", { alpha: false });
-ctx.imageSmoothingEnabled = false;
+
+//Check class for these settings!
+// ctx.imageSmoothingEnabled = false;
 // ctx.imageSmoothingQuality = "high"
 
 //----------------Creation of pixels--------------------------------
@@ -96,161 +114,6 @@ let clicked_released_ypos = [];
 //when zooming, is used to tell how far from top left the squares that are going to be drawn are
 var distance_left_x_zooming = size_lower
 var distance_top_y_zooming = size_lower
-
-//----------------------------Classes-------------------------
-
-class Square {
-  constructor(xpos, ypos, hue, saturation, lightness, square_size) {
-    this.xpos = xpos;
-    this.ypos = ypos;
-    this.hue = hue;
-    this.saturation = saturation;
-    this.lightness = lightness;
-    this.square_size = square_size
-    this.draw();
-  }
-
-  draw() {
-    // console.log('drawing'
-    switch (true) {
-      case isFinite(this.hue):
-        this.color = `hsl( ${this.hue} , ${this.saturation}% , ${this.lightness}%)`;
-        ctx.fillStyle = this.color;
-        ctx.fillRect(this.xpos, this.ypos, this.square_size, this.square_size) ;
-        break;
-
-      default:
-        this.color = `hsl(0, 0%, 0%)`;
-        ctx.fillStyle = this.color;
-        ctx.fillRect(this.xpos, this.ypos, this.square_size, this.square_size) ;
-        break;
-    }
-  }
-
-  hue_changed(expression, x, y) {
-    this.hue = Function( `return ${expression.replace(/X/g, x).replace(/Y/g, y)}` )();
-    this.draw();
-  }
-
-  saturation_changed(expression, x, y) {
-    this.saturation = Math.abs( ((100 + Function( `return ${expression.replace(/X/g, x).replace(/Y/g, y)}` )()) % 200) - 100 );
-    this.draw();
-  }
-  lightness_changed(expression, x, y) {
-    this.lightness = Math.abs( ((100 + Function( `return ${expression.replace(/X/g, x).replace(/Y/g, y)}` )()) % 200) - 100 );
-    this.draw();
-  }
-
-}
-
-class Square_matrix {
-
-  constructor(hue, saturation, lightness){
-    const ctx = canvas.getContext("2d", { alpha: false });
-    ctx.imageSmoothingEnabled = false;
-    this.square_matrix = []
-    this.hue = hue
-    this.saturation = saturation
-    this.lightness = lightness
-  }
-
-  create_squares(start_x, start_y, width, length, square_dimensions, pixel_ratio){
-
-    //column
-    //width is locally declared as width for improved performance by reducing amount of property lookups
-    for (let x = start_x, runs = width; x <= runs; x++) {
-      if (this.square_matrix[x] == undefined) {
-        this.square_matrix[x] = new Array(~~length);
-      }
-
-      for (let y = start_y, runs = length; y <= runs; y++) {
-        let color_x = x * pixel_ratio
-        let color_y = y * pixel_ratio
-        this.square_matrix[x][y] = new Square(
-          (x - start_x) * square_dimensions,
-          (y - start_x) * square_dimensions,
-          this.set_hue(this.hue, color_x, color_y),
-          this.set_saturation(this.saturation, color_x, color_y),
-          this.set_lightness(this.lightness, color_x, color_y),
-          square_dimensions
-        );
-      }
-    }
-    
-    if (start_x == start_y && width == length) {
-      return;
-    }
-    
-    // row
-    for (let x = start_y, runs = length; x <= runs; x++) {
-      if (this.square_matrix[x] == undefined) {
-        this.square_matrix[x] = [];
-        // this.square_matrix[x] = new    Array(~~width);
-      }
-  
-      for (let y = start_x, runs = width; y <= runs; y++) {
-        let color_x = x * pixel_ratio
-        let color_y = y * pixel_ratio
-  
-        this.square_matrix[x][y] = new Square(
-          (x - size_lower) * square_dimensions,
-          (y - size_lower) * square_dimensions,
-          this.set_hue(this.hue, color_x, color_y),
-          this.set_saturation(this.saturation, color_x, color_y),
-          this.set_lightness(this.lightness, color_x, color_y),
-          square_dimensions
-        );
-      }
-    }
-  }
-//TODO arguments should be same for new/draw_pixels
-  draw_squares(start_x, end_x, start_y, end_y){
-    for (let x = start_x, runs = end_x; x <= runs; x++) {
-      for (let y = start_y, runs = end_y; y <= runs; y++) {
-        this.square_matrix[x][y].xpos = (x  - start_x) * absolute_width;
-        this.square_matrix[x][y].ypos = (y - start_y) * absolute_width;
-        this.square_matrix[x][y].square_size = absolute_width;
-        this.square_matrix[x][y].draw();
-      }
-    }
-  }
-
-  set_hue(expression, x, y) {
-    return Function( `return ${expression.replace(/X/g, x).replace(/Y/g, y)}` )();
-  }
-
-  set_saturation(expression, x, y) {
-    return Math.abs( ((100 + Function( `return + ${expression.replace(/X/g, x).replace(/Y/g, y)}` )()) % 200) - 100 ); //Sawtooth pattern
-  }
-  
-  set_lightness(expression, x, y) {
-    return Math.abs( ((100 + Function( `return + ${expression.replace(/X/g, x).replace(/Y/g, y)}` )()) % 200) - 100); //Sawtooth pattern
-  }
-
-  class_method_loop(method, component) {
-
-    if (method === "hue") {
-      var component_expression = component
-      var class_method = Square.prototype.hue_changed;
-    }
-  
-    else if (method === "saturation") {
-      var component_expression = component
-      var class_method = Square.prototype.saturation_changed;
-    }
-  
-    else if (method === "lightness") {
-      var component_expression = component
-      var class_method = Square.prototype.lightness_changed;
-    }
-  
-    for (let x = size_lower; x <= size_upper; x++) {
-      for (let y = size_lower; y <= size_upper; y++) {
-        class_method.call(this.square_matrix[x][y], component_expression, x*pixel_ratio, y*pixel_ratio);
-      }
-    }
-  }
-}
 
 //------------------------INITIALIZATION------------------------
 
@@ -287,7 +150,6 @@ function change_size(old_size_bipartite , change){
       dataURL = canvas.toDataURL();
       original_img.src = dataURL;
       resizing_img.src = dataURL;
-      // new_pixels(size_lower, old_size_bipartite+1, size_upper, size_upper);
       break;
 
 
@@ -314,49 +176,6 @@ function change_size(old_size_bipartite , change){
       resizing_img.src = dataURL;
       break;
   }
-}
-
-function change_pixel_ratio() {
-  //Checks if get_pixel_ratio.value has quotations, having quotations creates a cool effect
-  //Because it makes pixel_ratio a string and not a float
-  if (get_pixel_ratio.value.includes('"')) {
-    pixel_ratio = get_pixel_ratio.value.replace(/\"/g, "");
-  }
-  else {
-    pixel_ratio = parseFloat(get_pixel_ratio.value);
-  }
-  matrix_squares.create_squares(size_lower, size_lower, size_upper, size_upper, absolute_width, pixel_ratio)
-  dataURL = canvas.toDataURL();
-  original_img.src = dataURL;
-  resizing_img.src = dataURL;
-}
-
-function class_method_loop(method, component) {
-
-  if (method === "hue") {
-    var component_expression = component
-    var class_method = Square.prototype.hue_changed;
-  }
-
-  else if (method === "saturation") {
-    var component_expression = component
-    var class_method = Square.prototype.saturation_changed;
-  }
-
-  else if (method === "lightness") {
-    var component_expression = component
-    var class_method = Square.prototype.lightness_changed;
-  }
-
-  for (let x = size_lower; x <= size_upper; x++) {
-    for (let y = size_lower; y <= size_upper; y++) {
-      class_method.call(matrix_squares[x][y], component_expression, x*pixel_ratio, y*pixel_ratio);
-    }
-  }
-
-  dataURL = canvas.toDataURL();
-  original_img.src = dataURL;
-  resizing_img.src = dataURL;
 }
 
 function set_hue(x, y) {
@@ -402,15 +221,16 @@ function get_cursor_position(canvas, event) {
       distance_top_y_zooming = size_lower
       ctx.drawImage(original_img, 0, 0, 600, 600);
       resizing_img.src = canvas.toDataURL();
+      original_img.src = canvas.toDataURL();
       return;
     }
 
     else {
-      //sorts array from lowest to highest
 
+      //sorts array from lowest to highest
       clicked_released_xpos.sort(function (a, b) {return a - b;});
       clicked_released_ypos.sort(function (a, b) {return a - b;});
-      //TODO: instead of size_lower, shold be lowest size of current image
+
       let start_x = ~~(clicked_released_xpos[0] / absolute_width) + distance_left_x_zooming;
       let end_x = ~~(clicked_released_xpos[1] / absolute_width) + distance_left_x_zooming;
 
@@ -418,14 +238,21 @@ function get_cursor_position(canvas, event) {
       let end_y = (~~(clicked_released_ypos[1] / absolute_width) + distance_top_y_zooming);
 
 
+      //These if else statements ensure better zooming
       if (end_x - start_x > end_y - start_y) {
         if (start_y-1 >= size_lower && start_y-1 <= size_upper){
           start_y -= 1;
         }
+        else{
+          end_y += 1
+        }
       }
       else if (end_x - start_x < end_y - start_y) {
         if (start_x-1 >= size_lower && start_x-1 <= size_upper){
-        start_x -= 1;
+          start_x -= 1;
+        }
+        else{
+          end_x += 1;
         }
       }
 
@@ -435,8 +262,8 @@ function get_cursor_position(canvas, event) {
       size = end_x - start_x + 1;
       absolute_width = canvas.width / size ;
       matrix_squares.draw_squares(start_x, end_x, start_y, end_y)
-      dataURL = canvas.toDataURL();
-      resizing_img.src = dataURL;
+      
+      resizing_img.src = canvas.toDataURL();;
     }
   }
 }
@@ -455,7 +282,7 @@ function zoom_guider() {
   let above = false;
 
   let distance_from_down_x = Math.abs(current_x - clicked_released_xpos[0])
-  let distance_from_down_y =  Math.abs(current_y - clicked_released_ypos[0])
+  let distance_from_down_y = Math.abs(current_y - clicked_released_ypos[0])
 
 
   if (current_x - clicked_released_xpos[0] > 0) {
