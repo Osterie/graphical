@@ -15,17 +15,17 @@ const get_upscale_button = document.getElementById("upscale");
 get_hue_expression.addEventListener("change", function () {
   hue_expression = get_hue_expression.value;
 
-  // class_method_loop("hue", hue_expression);
+  matrix_squares.class_method_loop("hue", hue_expression);
 });
 get_saturation_expression.addEventListener("change", function () {
   saturation_expression = get_saturation_expression.value;
 
-  // class_method_loop("saturation", saturation_expression);
+  matrix_squares.class_method_loop("saturation", saturation_expression);
 });
 get_lightness_expression.addEventListener("change", function () {
   lightness_expression = get_lightness_expression.value;
 
-  // class_method_loop("lightness", lightness_expression);
+  matrix_squares.class_method_loop("lightness", lightness_expression);
 });
 
 get_pixel_ratio.addEventListener("change", function () {
@@ -149,9 +149,6 @@ class Square_matrix {
     const ctx = canvas.getContext("2d", { alpha: false });
     ctx.imageSmoothingEnabled = false;
     this.square_matrix = []
-    // dataURL = canvas.toDataURL();
-    // original_img.src = dataURL;
-    // resizing_img.src = dataURL;
     this.hue = hue
     this.saturation = saturation
     this.lightness = lightness
@@ -160,61 +157,56 @@ class Square_matrix {
   create_squares(start_x, start_y, width, length, square_dimensions, pixel_ratio){
 
     //column
-      //width is locally declared as width for improved performance by reducing amount of property lookups
-      for (let x = start_x, runs = width; x <= runs; x++) {
-        if (this.square_matrix[x] == undefined) {
-          this.square_matrix[x] = new Array(~~length);
-        }
-    
-        for (let y = start_y, runs = length; y <= runs; y++) {
-          let color_x = x * pixel_ratio
-          let color_y = y * pixel_ratio
-          this.square_matrix[x][y] = new Square(
-            (x - start_x) * square_dimensions,
-            (y - start_x) * square_dimensions,
-            this.set_hue(this.hue, color_x, color_y),
-            this.set_saturation(this.saturation, color_x, color_y),
-            this.set_lightness(this.lightness, color_x, color_y),
-            square_dimensions
-          );
-        }
+    //width is locally declared as width for improved performance by reducing amount of property lookups
+    for (let x = start_x, runs = width; x <= runs; x++) {
+      if (this.square_matrix[x] == undefined) {
+        this.square_matrix[x] = new Array(~~length);
       }
 
-    
-      if (start_x == start_y && width == length) {
-        return;
-      }
-
-    
-      // row
-      for (let x = start_y, runs = length; x <= runs; x++) {
-        if (this.square_matrix[x] == undefined) {
-          this.square_matrix[x] = [];
-          // this.square_matrix[x] = new    Array(~~width);
-        }
-    
-        for (let y = start_x, runs = width; y <= runs; y++) {
-          let color_x = x * pixel_ratio
-          let color_y = y * pixel_ratio
-    
-          this.square_matrix[x][y] = new Square(
-            (x - size_lower) * square_dimensions,
-            (y - size_lower) * square_dimensions,
-            this.set_hue(this.hue, color_x, color_y),
-            this.set_saturation(this.saturation, color_x, color_y),
-            this.set_lightness(this.lightness, color_x, color_y),
-            square_dimensions
-          );
-        }
+      for (let y = start_y, runs = length; y <= runs; y++) {
+        let color_x = x * pixel_ratio
+        let color_y = y * pixel_ratio
+        this.square_matrix[x][y] = new Square(
+          (x - start_x) * square_dimensions,
+          (y - start_x) * square_dimensions,
+          this.set_hue(this.hue, color_x, color_y),
+          this.set_saturation(this.saturation, color_x, color_y),
+          this.set_lightness(this.lightness, color_x, color_y),
+          square_dimensions
+        );
       }
     }
-//TODO arguments should be same for new/draw_pixels
+    
+    if (start_x == start_y && width == length) {
+      return;
+    }
+    
+    // row
+    for (let x = start_y, runs = length; x <= runs; x++) {
+      if (this.square_matrix[x] == undefined) {
+        this.square_matrix[x] = [];
+        // this.square_matrix[x] = new    Array(~~width);
+      }
   
+      for (let y = start_x, runs = width; y <= runs; y++) {
+        let color_x = x * pixel_ratio
+        let color_y = y * pixel_ratio
+  
+        this.square_matrix[x][y] = new Square(
+          (x - size_lower) * square_dimensions,
+          (y - size_lower) * square_dimensions,
+          this.set_hue(this.hue, color_x, color_y),
+          this.set_saturation(this.saturation, color_x, color_y),
+          this.set_lightness(this.lightness, color_x, color_y),
+          square_dimensions
+        );
+      }
+    }
+  }
+//TODO arguments should be same for new/draw_pixels
   draw_squares(start_x, end_x, start_y, end_y){
-
     for (let x = start_x, runs = end_x; x <= runs; x++) {
       for (let y = start_y, runs = end_y; y <= runs; y++) {
-
         this.square_matrix[x][y].xpos = (x  - start_x) * absolute_width;
         this.square_matrix[x][y].ypos = (y - start_y) * absolute_width;
         this.square_matrix[x][y].square_size = absolute_width;
@@ -228,12 +220,11 @@ class Square_matrix {
   }
 
   set_saturation(expression, x, y) {
-    //Sawtooth pattern
-    return Math.abs( ((100 + Function( `return + ${expression.replace(/X/g, x).replace(/Y/g, y)}` )()) % 200) - 100 );
+    return Math.abs( ((100 + Function( `return + ${expression.replace(/X/g, x).replace(/Y/g, y)}` )()) % 200) - 100 ); //Sawtooth pattern
   }
   
   set_lightness(expression, x, y) {
-    return Math.abs( ((100 + Function( `return + ${expression.replace(/X/g, x).replace(/Y/g, y)}` )()) % 200) - 100);
+    return Math.abs( ((100 + Function( `return + ${expression.replace(/X/g, x).replace(/Y/g, y)}` )()) % 200) - 100); //Sawtooth pattern
   }
 
   class_method_loop(method, component) {
@@ -255,7 +246,7 @@ class Square_matrix {
   
     for (let x = size_lower; x <= size_upper; x++) {
       for (let y = size_lower; y <= size_upper; y++) {
-        class_method.call(matrix_pixels[x][y], component_expression, x*pixel_ratio, y*pixel_ratio);
+        class_method.call(this.square_matrix[x][y], component_expression, x*pixel_ratio, y*pixel_ratio);
       }
     }
   }
@@ -359,9 +350,7 @@ function class_method_loop(method, component) {
 
   for (let x = size_lower; x <= size_upper; x++) {
     for (let y = size_lower; y <= size_upper; y++) {
-      // matrix_pixels[x][y].xpos = (x  - size_lower) * absolute_width;
-      // matrix_pixels[x][y].ypos = (y - size_lower) * absolute_width;
-      class_method.call(matrix_pixels[x][y], component_expression, x*pixel_ratio, y*pixel_ratio);
+      class_method.call(matrix_squares[x][y], component_expression, x*pixel_ratio, y*pixel_ratio);
     }
   }
 
