@@ -124,7 +124,6 @@ function winInit() {
   // ctx.filter = "hue-rotate(200deg)" //INTERESTING!
   size = size_upper - size_lower + 1;
   absolute_width = (canvas.width / size ); //width in px of every "pixel" drawn on canvas
-  // new_pixels(size_lower, size_lower, size_upper, size_upper);
   matrix_squares = new Square_matrix(hue_expression, saturation_expression, lightness_expression)
   matrix_squares.create_squares(size_lower, size_lower, size_upper, size_upper, absolute_width, pixel_ratio)
   dataURL = canvas.toDataURL();
@@ -159,7 +158,6 @@ function change_size(old_size_bipartite , change){
       //size of pixel - the old size (abs(size_lower) + abs(size_upper))
       var distance_from_top_left = ~~(absolute_width) * (old_size_bipartite - size_lower)
       var image_size = ~~((absolute_width) * (size_upper - old_size_bipartite + 1 ))
-
       ctx.drawImage(resizing_img, distance_from_top_left, distance_from_top_left, image_size, image_size);
       matrix_squares.create_squares(size_lower, size_lower, old_size_bipartite-1, size_upper, absolute_width, pixel_ratio)
       dataURL = canvas.toDataURL();
@@ -178,23 +176,15 @@ function change_size(old_size_bipartite , change){
   }
 }
 
-function set_hue(x, y) {
-  return Function( `return ${hue_expression.replace(/X/g, x).replace(/Y/g, y)}` )();
-}
-
-function set_saturation(x, y) {
-  //Sawtooth pattern
-  return Math.abs( ((100 + Function( `return + ${saturation_expression.replace(/X/g, x).replace(/Y/g, y)}` )()) % 200) - 100 );
-}
-
-function set_lightness(x, y) {
-  
-  return Math.abs( ((100 + Function( `return + ${lightness_expression.replace(/X/g, x).replace(/Y/g, y)}` )()) % 200) - 100);
-}
-
-
 //---------------------ZOOMING-------------------
 
+//TODO: Make more general!!!!!
+//get_cursor_position should have nothing to do with zoom_guider, and vice versa, 
+//maybe return something?
+
+//do mousedown get_cursor_position, which is the initial position.
+//mouse move gives the current mouseposition
+//mouseup gives last cursor position and then draaaaws
 
 function get_cursor_position(canvas, event) {
 
@@ -295,7 +285,6 @@ function zoom_guider() {
 
   //current mouse position is in top right or bottom left quadrant
   if ((right && above) || (!right && !above)) {
-    //FIXME: Super chunky and ugly
     if (distance_from_down_x > distance_from_down_y) {
       guiding_box_width  = current_x - clicked_released_xpos[0];
       guiding_box_height = clicked_released_xpos[0] - current_x;
@@ -338,6 +327,10 @@ function zoom_guider() {
 }
 
 
+
+
+
+
 //------------------START--------------------
 //TO BE USED ANOTHER TIME?
 // var animId;
@@ -359,9 +352,7 @@ function zoom_guider() {
 // }
 //------------------END--------------------
 
-//!HUGE? TODO: use webworkers, ask chat gpt-3 for help
-
-//?WONFIX TODO: Minor fix in the new_pixels function, it creates the corner piece twice
+//!HUGE? TODO: use webworkers, ask chat gpt-3 for help, not viable? passing information between webworker and main script removes class
 
 //TODO: Research complex plotting or whatever, make an option to change to using complex numbers?
 
@@ -372,10 +363,7 @@ function zoom_guider() {
 //!TODO: Performance mode and fast mode, ise ctx.drawimage method for fast and redraw every pixel every time for fast mode.
 //TODO: save settings in localstorage
 
-//TODO: make it possible to zoom in on inzoomed image.
-
-//TODO: Create option to make a variable that changes every second f.eks. goes from 1 to 10 then 10 to 1, call it n and then n can be
-// used in the color chooser
+//TODO: Create option to make a variable that changes every second f.eks. goes from 1 to 10 then 10 to 1, call it n and then n can be used in the color chooser
 
 //TODO: when changing size, the direction of which the new image is drawn in is wrong..
 //TODO: Add more color models, i.e rgb and such
@@ -394,3 +382,5 @@ function zoom_guider() {
 //* make it so that you can only draw complete pixels with zoom_guider, and only draw and show the pixels "selected"
 //* HUGE create own functions and such instead of using fulabl libraries. Functions to be made self include : drawFyltRektangel, drawfirkant, drawBrukXY, drawBrukBakgrunn, drawBrukSynsfelt, drawBrukCanvas
 //* size_lower_changed and size_upper_changed turned into one function
+//*WONTFIX Minor fix in the new_pixels function, it creates the corner piece twice
+//*make it possible to zoom in on inzoomed image.

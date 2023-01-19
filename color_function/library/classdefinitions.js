@@ -48,7 +48,6 @@ class Square_matrix {
       ctx.imageSmoothingEnabled = false;
     //   ctx.imageSmoothingQuality = "high"
 
-
       this.square_matrix = []
       this.hue_expression = hue
       this.saturation_expression = saturation
