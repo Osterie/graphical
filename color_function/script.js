@@ -111,18 +111,20 @@ canvas.addEventListener("mousedown", function (e) {
 canvas.addEventListener("mousemove", function(e){
   if (mouse_is_down){
     current_cursor_position = get_cursor_position(canvas, e);
-    matrix_squares.zoom_guide(initial_cursor_position[0], current_cursor_position[0], initial_cursor_position[1], current_cursor_position[1])
+    draw_perfect_square(ctx, resizing_img, initial_cursor_position[0], current_cursor_position[0], initial_cursor_position[1], current_cursor_position[1])
+    
+    // matrix_squares.zoom_guide(initial_cursor_position[0], current_cursor_position[0], initial_cursor_position[1], current_cursor_position[1])
   }
 });
 
 canvas.addEventListener("mouseup", function (event) {
   mouse_is_down = false;
-  matrix_squares.zoom(event, initial_cursor_position[0], current_cursor_position[0], initial_cursor_position[1], current_cursor_position[1])
+  // matrix_squares.zoom(event, initial_cursor_position[0], current_cursor_position[0], initial_cursor_position[1], current_cursor_position[1])
 });
 
 canvas.addEventListener("mouseout", function(event) {
   mouse_is_down = false;
-  matrix_squares.zoom(event, initial_cursor_position[0], current_cursor_position[0], initial_cursor_position[1], current_cursor_position[1])
+  // matrix_squares.zoom(event, initial_cursor_position[0], current_cursor_position[0], initial_cursor_position[1], current_cursor_position[1])
 });
 
 
@@ -358,69 +360,64 @@ function get_cursor_position(canvas, event) {
 // }
 
 
-function zoom_guider(cursor_start_x, cursor_end_x, cursor_start_y, cursor_end_y) {
+function draw_perfect_square(ctx, background_img, cursor_start_x, cursor_end_x, cursor_start_y, cursor_end_y) {
 
-  let current_x = event.offsetX;
-  let current_y = event.offsetY;
+  let height = 0; //Positive values down, negative values up.
+  let width = 0; //positive values to the right, negative to the left.
 
-  let guiding_box_height; //Positive values down, negative values up.
-  let guiding_box_width; //positive values to the right, negative to the left.
+  //checks which quadrant mouse is in relation to the initially clicked point (think unit circle quadrants or whatever)
+  let quadrant = 1
 
-  //checks where current x and y pos are in relation to down_x and down_y
-  let right = false;
-  let above = false;
-
-  let distance_from_down_x = Math.abs(current_x - clicked_released_xpos[0])
-  let distance_from_down_y = Math.abs(current_y - clicked_released_ypos[0])
-
-
-  if (current_x - clicked_released_xpos[0] > 0) {
-    right = true;
+  if (cursor_end_y - cursor_start_y > 0) {
+    quadrant = 4
   }
 
-  if (current_y - clicked_released_ypos[0] < 0) {
-    above = true;
-  }
-
-  //current mouse position is in top right or bottom left quadrant
-  if ((right && above) || (!right && !above)) {
-    if (distance_from_down_x > distance_from_down_y) {
-      guiding_box_width  = current_x - clicked_released_xpos[0];
-      guiding_box_height = clicked_released_xpos[0] - current_x;
+  if (cursor_end_x - cursor_start_x < 0) {
+    quadrant = 3
+    if (cursor_end_y - cursor_start_y < 0){
+      quadrant = 2
     }
+  }
 
+
+  //current mouse position is in top right or bottom left quadrant (quadrant 1 and 3)
+  if (quadrant == 1 || quadrant == 3) {
+    if (Math.abs(cursor_end_x - cursor_start_x) > Math.abs(cursor_end_y - cursor_start_y)) {
+        width = cursor_end_x - cursor_start_x;
+        height = -width
+    } 
+    
     else {
-      guiding_box_width = clicked_released_ypos[0] - current_y;
-      guiding_box_height = current_y - clicked_released_ypos[0];
+      height = (cursor_end_y - cursor_start_y)
+      width = -height
     }
   }
+  //quadrant 2 and 4
+  else if (quadrant == 2 || quadrant == 4) {
 
-  else if ((right && !above) || (!right && above)) {
 
-    if (distance_from_down_x > distance_from_down_y) {
-      guiding_box_width  = current_x - clicked_released_xpos[0];
-      guiding_box_height = current_x - clicked_released_xpos[0];
+    if (Math.abs(cursor_end_x - cursor_start_x) > Math.abs(cursor_end_y - cursor_start_y)) {
+      width  = cursor_end_x - cursor_start_x;
+      height = width
     }
     else {
-      guiding_box_width  = current_y - clicked_released_ypos[0];
-      guiding_box_height = current_y - clicked_released_ypos[0];
+      width  = cursor_end_y - cursor_start_y;
+      height = width
     }
   }
-
 
   //Parameters, must be between 0 and canvas.width/heigth
-  let param_x = clicked_released_xpos[0] + ~~guiding_box_width;
-  let param_y = clicked_released_ypos[0] + ~~guiding_box_height;
+  let param_x = cursor_start_x + ~~width;
+  let param_y = cursor_start_y + ~~height;
 
   //Draws the guiding box
   if ( (param_x < canvas.width && param_x > 0) && (param_y < canvas.height && param_y > 0 )){
 
-    clicked_released_xpos[1] = param_x;
-    clicked_released_ypos[1] = param_y;
-
-    ctx.drawImage(resizing_img, 0, 0, 600, 600);
+    // clicked_released_xpos[1] = param_x;
+    // clicked_released_ypos[1] = param_y;
+    ctx.drawImage(background_img, 0, 0, canvas.width, canvas.height);
     ctx.beginPath();
-    ctx.rect(clicked_released_xpos[0], clicked_released_ypos[0], guiding_box_width, guiding_box_height);
+    ctx.rect(cursor_start_x, cursor_start_y, width, height);
     ctx.stroke();
   }
 }
