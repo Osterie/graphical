@@ -87,12 +87,12 @@ class Square_matrix {
         this.lightness = Math.abs( ((100 + Function( `return + ${this.lightness_expression.replace(/X/g, color_x).replace(/Y/g, color_y)}` )()) % 200) - 100)
 
         this.square_matrix[x][y] = new Square(
-          ~~((x - start_x) * square_dimensions),
-          ~~((y - start_x) * square_dimensions),
+          ((x - start_x) * this.absolute_width),
+          ((y - start_x) * this.absolute_width),
           this.hue,
           this.saturation,
           this.lightness,
-          ~~square_dimensions
+          this.absolute_width
         );
       }
     }
@@ -116,21 +116,22 @@ class Square_matrix {
         this.lightness = Math.abs( ((100 + Function( `return + ${this.lightness_expression.replace(/X/g, color_x).replace(/Y/g, color_y)}` )()) % 200) - 100)
         
         this.square_matrix[x][y] = new Square(
-          ~~((x - start_x) * square_dimensions),
-          ~~((y - start_x) * square_dimensions),
+          ((x - start_x) * this.absolute_width),
+          ((y - start_x) * this.absolute_width),
           this.hue,
           this.saturation,
           this.lightness,
-          ~~square_dimensions
+          this.absolute_width
         );
       }
     }
   }
   //TODO arguments should be same for new/draw_pixels
     draw_squares(start_x, end_x, start_y, end_y, absolute_width){
+      this.ctx.clearRect(0, 0, canvas.width, canvas.height)
+
       for (let x = start_x, runs = end_x; x <= runs; x++) {
         for (let y = start_y, runs = end_y; y <= runs; y++) {
-
           this.square_matrix[x][y].xpos = (x  - start_x) * absolute_width;
           this.square_matrix[x][y].ypos = (y - start_y) * absolute_width;
           this.square_matrix[x][y].square_size = absolute_width;
@@ -176,18 +177,18 @@ class Square_matrix {
 
       //size_upper changed
       case change === 'higher' && this.size_upper >= old_size_bipartite:
-        matrix_squares.create_squares(this.size_lower, old_size_bipartite+1, this.size_upper, this.size_upper, this.absolute_width, this.pixel_ratio)
+        this.create_squares(this.size_lower, old_size_bipartite+1, this.size_upper, this.size_upper, this.absolute_width, this.pixel_ratio)
         break;
 
       //size_lower changed
       case change === 'lower' && this.size_lower <= old_size_bipartite :
-        matrix_squares.create_squares(this.size_lower, this.size_lower, old_size_bipartite-index_zero, this.size_upper, this.absolute_width, this.pixel_ratio)
+        this.create_squares(this.size_lower, this.size_lower, old_size_bipartite-index_zero, this.size_upper, this.absolute_width, this.pixel_ratio)
         break;
 
       //this.size_upper has decreased or this.size_lower has increased
       default:
         this.absolute_width = (this.canvas.width / (this.size_upper - this.size_lower + index_zero) )
-        matrix_squares.draw_squares(this.size_lower, this.size_upper, this.size_lower, this.size_upper, this.absolute_width)
+        this.draw_squares(this.size_lower, this.size_upper, this.size_lower, this.size_upper, this.absolute_width)
         break;
     }
   }
@@ -196,11 +197,16 @@ class Square_matrix {
 
     const zoom_area = largest_drawable_square(cursor_start_x, cursor_end_x, cursor_start_y, cursor_end_y)
 
-    const canvas_end_x = cursor_start_x + zoom_area.width;
-    const canvas_end_y = cursor_start_y + zoom_area.height;
+    const canvas_current_x = cursor_start_x + zoom_area.width;
+    const canvas_current_y = cursor_start_y + zoom_area.height;
 
     //Draws the guiding box if it fits the canvas
-    if ( (canvas_end_x < this.canvas.width && canvas_end_x > 0) && (canvas_end_y < this.canvas.height && canvas_end_y > 0 )){
+
+    const canvas_start_x = 0
+    const canvas_start_y = 0
+
+     
+    if ( (canvas_start_x < canvas_current_x && canvas_current_x < this.canvas.width) && (canvas_start_y < canvas_current_y && canvas_current_y < this.canvas.height) ){
 
       //start is the smallest value, while end is the largest, opposite for y value because it is distance from top of canvas
       const start_x = Math.min(~~(cursor_start_x / this.absolute_width) + this.distance_left_x, ~~( (cursor_start_x + zoom_area.width) / this.absolute_width ) + this.distance_left_x )
@@ -213,7 +219,8 @@ class Square_matrix {
       this.distance_top_y = start_y
       
       this.absolute_width = this.canvas.width / (end_x - start_x + index_zero) ;
-      matrix_squares.draw_squares(start_x, end_x, start_y, end_y, this.absolute_width)
+      this.draw_squares(start_x, end_x, start_y, end_y, this.absolute_width)
     }
   }
+  
 }

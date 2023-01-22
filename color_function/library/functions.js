@@ -68,3 +68,26 @@ function largest_drawable_square(cursor_start_x, cursor_end_x, cursor_start_y, c
   }
   return {cursor_start_x, cursor_end_x, cursor_start_y, cursor_end_y, width, height}
 }
+
+
+function get_cursor_position(canvas, event) {
+  //finds the absolute coordinates clicked, given as distence from top left.
+  return [event.offsetX, event.offsetY];
+}
+
+
+function draw_square(canvas_info, background_img, cursor_start_x, cursor_end_x, cursor_start_y, cursor_end_y) {
+  let canvas = canvas_info;
+  const ctx = canvas.getContext("2d", { alpha: false });
+  let current_square = largest_drawable_square( cursor_start_x, cursor_end_x, cursor_start_y, cursor_end_y)
+
+  let parameter_x = cursor_start_x + ~~current_square.width;
+  let parameter_y = cursor_start_y + ~~current_square.height;
+  //Draws the guiding box if it fits the canvas
+  if ( (parameter_x < canvas.width && parameter_x > 0) && (parameter_y < canvas.height && parameter_y > 0 ) ){
+    ctx.drawImage(background_img, 0, 0, canvas.width, canvas.height);
+    ctx.beginPath();
+    ctx.rect(cursor_start_x, cursor_start_y, current_square.width, current_square.height);
+    ctx.stroke();
+  }
+}

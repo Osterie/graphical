@@ -11,31 +11,25 @@ const get_size_upper = document.getElementById("size_upper");
 const get_pixel_ratio = document.getElementById("pixel_ratio");
 const get_upscale_button = document.getElementById("upscale");
 
-function update_images() {
-  dataURL = canvas.toDataURL();
-  original_img.src = dataURL;
-  resizing_img.src = dataURL;
-}
-
 get_hue_expression.addEventListener("change", function () {
   hue_expression = get_hue_expression.value;
   matrix_squares.hue_expression = hue_expression
   matrix_squares.class_method_loop("hue", hue_expression);
-  update_images()
+  update_images(canvas)
 });
 
 get_saturation_expression.addEventListener("change", function () {
   saturation_expression = get_saturation_expression.value;
   matrix_squares.saturation_expression = saturation_expression
   matrix_squares.class_method_loop("saturation", saturation_expression);
-  update_images()
+  update_images(canvas)
 });
 
 get_lightness_expression.addEventListener("change", function () {
   lightness_expression = get_lightness_expression.value;
   matrix_squares.lightness_expression = lightness_expression
   matrix_squares.class_method_loop("lightness", lightness_expression);
-  update_images()
+  update_images(canvas)
 });
 
 get_pixel_ratio.addEventListener("change", function () {
@@ -47,7 +41,7 @@ get_pixel_ratio.addEventListener("change", function () {
   distance_left_x_zooming = size_lower
   distance_top_y_zooming = size_lower
   matrix_squares.create_squares(size_lower, size_lower, size_upper, size_upper, absolute_width, pixel_ratio)
-  update_images()
+  update_images(canvas)
 });
 
 get_size_lower.addEventListener("change", function () {
@@ -66,7 +60,7 @@ get_size_lower.addEventListener("change", function () {
 
 
   matrix_squares.change_size(size_lower, size_upper, old_size, 'lower');
-  update_images()
+  update_images(canvas)
 });
 
 get_size_upper.addEventListener("change", function () {
@@ -85,12 +79,12 @@ get_size_upper.addEventListener("change", function () {
   
   
   matrix_squares.change_size(size_lower, size_upper, old_size, 'higher');
-  update_images()
+  update_images(canvas)
 });
 
 get_upscale_button.addEventListener("click", function () {
   matrix_squares.draw_squares(size_lower, size_upper, size_lower, size_upper, absolute_width)
-  update_images()
+  update_images(canvas)
 });
 
 //-----------------------Canvas-----------------------------
@@ -135,7 +129,7 @@ function handle_canvas_event_zoom(event) {
     case 'mousemove':
       if (mouse_is_down) {
         current_cursor_position = get_cursor_position(canvas, event);
-        draw_square(ctx, resizing_img, initial_cursor_position[0], current_cursor_position[0], initial_cursor_position[1], current_cursor_position[1])
+        draw_square(canvas, resizing_img, initial_cursor_position[0], current_cursor_position[0], initial_cursor_position[1], current_cursor_position[1])
       }
       break;
 
@@ -191,42 +185,18 @@ function winInit() {
   matrix_squares = new Square_matrix(canvas, hue_expression, saturation_expression, lightness_expression)
   matrix_squares.create_squares(size_lower, size_lower, size_upper, size_upper, absolute_width, pixel_ratio)
   
-  //FIXME: i want create_squares to draw the image nicely without drawing it twice which is being done now
-  matrix_squares.draw_squares(size_lower, size_upper, size_lower, size_upper, absolute_width)
-  update_images()
+  update_images(canvas)
 }
 
-//-----------------------FUNCTIONS------------------------
+//\\\\\\\\\\\\\\\\\\\\FUNCTIONS\\\\\\\\\\\\\\\\\\\\\\\
 
-//TODO: make a method?
-
-
-//---------------------ZOOMING-------------------
-
-
-//FIXME not using canvas argument...
-function get_cursor_position(canvas, event) {
-  //finds the absolute coordinates clicked, given as distence from top left.
-  return [event.offsetX, event.offsetY];
+function update_images(canvas){
+  dataURL = canvas.toDataURL();
+  original_img.src = dataURL;
+  resizing_img.src = dataURL;
 }
 
 
-function draw_square(ctx, background_img, cursor_start_x, cursor_end_x, cursor_start_y, cursor_end_y) {
-
-  let current_square = (largest_drawable_square( cursor_start_x, cursor_end_x, cursor_start_y, cursor_end_y))
-
-  let parameter_x = cursor_start_x + ~~current_square.width;
-  let parameter_y = cursor_start_y + ~~current_square.height;
-  //Draws the guiding box if it fits the canvas
-  if ( (parameter_x < canvas.width && parameter_x > 0) && (parameter_y < canvas.height && parameter_y > 0 )){
-    
-
-    ctx.drawImage(background_img, 0, 0, canvas.width, canvas.height);
-    ctx.beginPath();
-    ctx.rect(cursor_start_x, cursor_start_y, current_square.width, current_square.height);
-    ctx.stroke();
-  }
-}
 
 
 
@@ -281,6 +251,7 @@ function draw_square(ctx, background_img, cursor_start_x, cursor_end_x, cursor_s
 //* make it so that you can only draw complete pixels with zoom_guider, and only draw and show the pixels "selected"
 //* HUGE create own functions and such instead of using fulabl libraries. Functions to be made self include : drawFyltRektangel, drawfirkant, drawBrukXY, drawBrukBakgrunn, drawBrukSynsfelt, drawBrukCanvas
 //* size_lower_changed and size_upper_changed turned into one function
-// *WONTFIX Minor fix in the new_pixels function, it creates the corner piece twice
-// *make it possible to zoom in on inzoomed image.
-//* made zoominf more general
+//* WONTFIX Minor fix in the new_pixels function, it creates the corner piece twice
+//* make it possible to zoom in on inzoomed image.
+//* made zooming more general
+//* made functions into methods
