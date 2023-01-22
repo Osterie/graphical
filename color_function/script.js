@@ -42,7 +42,7 @@ get_pixel_ratio.addEventListener("change", function () {
   pixel_ratio = +get_pixel_ratio.value;
   size_upper = ~~(+get_size_upper.value / pixel_ratio);
   size_lower = ~~(+get_size_lower.value / pixel_ratio);
-  size = size_upper - size_lower + 1;
+  size = size_upper - size_lower + index_zero;
   absolute_width = canvas.width / size;
   distance_left_x_zooming = size_lower
   distance_top_y_zooming = size_lower
@@ -83,10 +83,11 @@ const ctx = canvas.getContext("2d", { alpha: false });
 
 //----------------Creation of pixels--------------------------------
 
+const index_zero = 1
 let matrix_pixels = [];
 let size_lower = +get_size_lower.value;
 let size_upper = +get_size_upper.value;
-let size = size_upper - size_lower + 1;
+let size = size_upper - size_lower + index_zero;
 let absolute_width;
 var pixel_ratio = parseFloat(get_pixel_ratio.value);
 
@@ -164,7 +165,7 @@ window.onload = winInit;
 function winInit() {
 
   // ctx.filter = "hue-rotate(200deg)" //INTERESTING!
-  size = size_upper - size_lower + 1;
+  size = size_upper - size_lower + index_zero;
   absolute_width = (canvas.width / size ); //width in px of every "pixel" drawn on canvas
   matrix_squares = new Square_matrix(hue_expression, saturation_expression, lightness_expression, absolute_width)
   matrix_squares.create_squares(size_lower, size_lower, size_upper, size_upper, absolute_width, pixel_ratio)

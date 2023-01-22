@@ -167,9 +167,11 @@ class Square_matrix {
 
     change_size(size_lower, size_upper, old_size_bipartite , change){
 
-      this.absolute_width = canvas.width / (size_upper - size_lower + 1);
+      const index_zero = 1
+      this.absolute_width = canvas.width / (size_upper - size_lower + index_zero);
       this.size_lower = size_lower
       this.size_upper = size_upper
+
 
       //old_size_bipartite means its either the old size_lower or old size_upper
       switch (true) {
@@ -188,15 +190,15 @@ class Square_matrix {
         case change === 'lower' && this.size_lower <= old_size_bipartite :
 
           var distance_from_top_left = ~~(this.absolute_width) * (old_size_bipartite - this.size_lower)
-          var image_size = ~~((this.absolute_width) * (this.size_upper - old_size_bipartite + 1 ))
+          var image_size = ~~((this.absolute_width) * (this.size_upper - old_size_bipartite + index_zero ))
           ctx.drawImage(resizing_img, distance_from_top_left, distance_from_top_left, image_size, image_size);
-          matrix_squares.create_squares(this.size_lower, this.size_lower, old_size_bipartite-1, this.size_upper, this.absolute_width, this.pixel_ratio)
+          matrix_squares.create_squares(this.size_lower, this.size_lower, old_size_bipartite-index_zero, this.size_upper, this.absolute_width, this.pixel_ratio)
 
           break;
     
         //this.size_upper has decreased or this.size_lower has increased
         default:
-          this.absolute_width = (canvas.width / (this.size_upper - this.size_lower + 1) )
+          this.absolute_width = (canvas.width / (this.size_upper - this.size_lower + index_zero) )
           matrix_squares.draw_squares(this.size_lower, this.size_upper, this.size_lower, this.size_upper, this.absolute_width)
           break;
       }
@@ -223,7 +225,7 @@ class Square_matrix {
       this.distance_left_x = start_x
       this.distance_top_y = start_y
       
-      this.absolute_width = canvas.width / (end_x - start_x + 1) ;
+      this.absolute_width = canvas.width / (end_x - start_x + index_zero) ;
       matrix_squares.draw_squares(start_x, end_x, start_y, end_y, this.absolute_width)
     }
   }
