@@ -12,7 +12,11 @@ class Square {
     draw() {
       switch (true) {
         case isFinite(this.hue):
-          this.color = `hsl( ${this.hue} , ${this.saturation}% , ${this.lightness}%)`;
+          this.color = `hsl( 
+             ${this.hue} ,
+             ${this.saturation}% ,
+             ${this.lightness}%)`;
+             
           ctx.fillStyle = this.color;
           ctx.fillRect(this.xpos, this.ypos, this.square_size, this.square_size) ;
           break;
@@ -54,24 +58,30 @@ class Square_matrix {
       this.saturation_expression = saturation
       this.lightness_expression = lightness
 
-      this.size_lower = -10
-      this.size_upper = -10
-      this.distance_left_x = this.size_lower
-      this.distance_top_y = this.size_lower
+      this.pixel_ratio
+      this.size_lower
+      this.distance_left_x
+      this.distance_top_y
       this.absolute_width = absolute_width
     }
   
     create_squares(start_x, start_y, width, length, square_dimensions, pixel_ratio){
+      this.pixel_ratio = pixel_ratio
+      this.size_lower = start_x
+      this.size_upper = length
+      this.distance_left_x = this.size_lower
+      this.distance_top_y = this.size_lower
+
       //column
       //width is locally declared as width for improved performance by reducing amount of property lookups
       for (let x = start_x, runs = width; x <= runs; x++) {
         if (this.square_matrix[x] == undefined) {
-          this.square_matrix[x] = new Array(~~length);
+          this.square_matrix[x] = new Array();
         }
   
         for (let y = start_y, runs = length; y <= runs; y++) {
-          let color_x = x * pixel_ratio
-          let color_y = y * pixel_ratio
+          let color_x = x * this.pixel_ratio
+          let color_y = y * this.pixel_ratio
           
           this.hue = Function( `return ${this.hue_expression.replace(/X/g, color_x).replace(/Y/g, color_y)}` )()
           this.saturation = Math.abs( ((100 + Function( `return + ${this.saturation_expression.replace(/X/g, color_x).replace(/Y/g, color_y)}` )()) % 200) - 100 )
@@ -99,8 +109,8 @@ class Square_matrix {
         }
     
         for (let y = start_x, runs = width; y <= runs; y++) {
-          let color_x = x * pixel_ratio
-          let color_y = y * pixel_ratio
+          let color_x = x * this.pixel_ratio
+          let color_y = y * this.pixel_ratio
           
           this.hue = Function( `return ${this.hue_expression.replace(/X/g, color_x).replace(/Y/g, color_y)}` )()
           this.saturation = Math.abs( ((100 + Function( `return + ${this.saturation_expression.replace(/X/g, color_x).replace(/Y/g, color_y)}` )()) % 200) - 100 )
@@ -119,17 +129,12 @@ class Square_matrix {
     }
   //TODO arguments should be same for new/draw_pixels
     draw_squares(start_x, end_x, start_y, end_y, absolute_width){
-      this.size_lower = start_x
-      this.size_upper = end_x
-      // this.distance_left_x = this.size_lower
-      // this.distance_top_y = this.size_lower
-      this.absolute_width = absolute_width
-
       for (let x = start_x, runs = end_x; x <= runs; x++) {
         for (let y = start_y, runs = end_y; y <= runs; y++) {
-          this.square_matrix[x][y].xpos = (x  - start_x) * this.absolute_width;
-          this.square_matrix[x][y].ypos = (y - start_y) * this.absolute_width;
-          this.square_matrix[x][y].square_size = this.absolute_width;
+
+          this.square_matrix[x][y].xpos = (x  - start_x) * absolute_width;
+          this.square_matrix[x][y].ypos = (y - start_y) * absolute_width;
+          this.square_matrix[x][y].square_size = absolute_width;
           this.square_matrix[x][y].draw();
         }
       }
@@ -152,53 +157,74 @@ class Square_matrix {
         var class_method = Square.prototype.lightness_changed;
       }
     
-      for (let x = size_lower; x <= size_upper; x++) {
-        for (let y = size_lower; y <= size_upper; y++) {
+      for (let x = this.size_lower; x <= this.size_upper; x++) {
+        for (let y = this.size_lower; y <= this.size_upper; y++) {
           class_method.call(this.square_matrix[x][y], component_expression, x*pixel_ratio, y*pixel_ratio);
         //   this.square_matrix[x][y].draw()
         }
       }
     }
 
+    change_size(size_lower, size_upper, old_size_bipartite , change){
 
-  zoom(ctx, event, cursor_start_x, cursor_end_x, cursor_start_y, cursor_end_y){
-    c(this.distance_left_x, 'what')
-    let zoom_area = largest_drawable_square(cursor_start_x, cursor_end_x, cursor_start_y, cursor_end_y)
+      this.absolute_width = canvas.width / (size_upper - size_lower + 1);
+      this.size_lower = size_lower
+      this.size_upper = size_upper
+
+      //old_size_bipartite means its either the old size_lower or old size_upper
+      switch (true) {
+    
+        //size_upper changed
+        case change === 'higher' && this.size_upper >= old_size_bipartite:
+    
+          var image_size = ~~((this.absolute_width) * (old_size_bipartite+1 - this.size_lower))
+          ctx.drawImage(resizing_img, 0, 0, image_size, image_size);
+          matrix_squares.create_squares(this.size_lower, old_size_bipartite+1, this.size_upper, this.size_upper, this.absolute_width, this.pixel_ratio)
+
+          break;
+    
+    
+        //size_lower changed
+        case change === 'lower' && this.size_lower <= old_size_bipartite :
+
+          var distance_from_top_left = ~~(this.absolute_width) * (old_size_bipartite - this.size_lower)
+          var image_size = ~~((this.absolute_width) * (this.size_upper - old_size_bipartite + 1 ))
+          ctx.drawImage(resizing_img, distance_from_top_left, distance_from_top_left, image_size, image_size);
+          matrix_squares.create_squares(this.size_lower, this.size_lower, old_size_bipartite-1, this.size_upper, this.absolute_width, this.pixel_ratio)
+
+          break;
+    
+        //this.size_upper has decreased or this.size_lower has increased
+        default:
+          this.absolute_width = (canvas.width / (this.size_upper - this.size_lower + 1) )
+          matrix_squares.draw_squares(this.size_lower, this.size_upper, this.size_lower, this.size_upper, this.absolute_width)
+          break;
+      }
+    }
 
 
-    let parameter_x = cursor_start_x + ~~zoom_area.width;
-    let parameter_y = cursor_start_y + ~~zoom_area.height;
+  zoom(cursor_start_x, cursor_end_x, cursor_start_y, cursor_end_y){
+
+    const zoom_area = largest_drawable_square(cursor_start_x, cursor_end_x, cursor_start_y, cursor_end_y)
+
+    const canvas_end_x = cursor_start_x + zoom_area.width;
+    const canvas_end_y = cursor_start_y + zoom_area.height;
+
     //Draws the guiding box if it fits the canvas
-    if ( (parameter_x < canvas.width && parameter_x > 0) && (parameter_y < canvas.height && parameter_y > 0 )){
-  
-    //TODO FIXME! use width and height in conjunction with cursor_start to find end_x/y
-  
-    let start_x = Math.min(~~(cursor_start_x / this.absolute_width) + this.distance_left_x, ~~( (cursor_start_x + zoom_area.width) / this.absolute_width ) + this.distance_left_x )
-    let end_x = Math.max(~~(cursor_start_x / this.absolute_width) + this.distance_left_x, ~~( (cursor_start_x + zoom_area.width) / this.absolute_width ) + this.distance_left_x )
+    if ( (canvas_end_x < canvas.width && canvas_end_x > 0) && (canvas_end_y < canvas.height && canvas_end_y > 0 )){
 
-    let start_y = Math.min(~~(cursor_start_y / this.absolute_width) + this.distance_top_y,  ~~( (cursor_start_y + zoom_area.height) / this.absolute_width ) + this.distance_top_y)
-    let end_y = Math.max(~~(cursor_start_y / this.absolute_width) + this.distance_top_y,  ~~( (cursor_start_y + zoom_area.height) / this.absolute_width ) + this.distance_top_y)
+      //start is the smallest value, while end is the largest, opposite for y value because it is distance from top of canvas
+      const start_x = Math.min(~~(cursor_start_x / this.absolute_width) + this.distance_left_x, ~~( (cursor_start_x + zoom_area.width) / this.absolute_width ) + this.distance_left_x )
+      const end_x = Math.max(~~(cursor_start_x / this.absolute_width) + this.distance_left_x, ~~( (cursor_start_x + zoom_area.width) / this.absolute_width ) + this.distance_left_x )
 
-      end_y += 1
-    c(this.distance_top_y)
-    
-    this.distance_left_x = start_x
-    this.distance_top_y = start_y
+      const start_y = Math.min(~~(cursor_start_y / this.absolute_width) + this.distance_top_y,  ~~( (cursor_start_y + zoom_area.height) / this.absolute_width ) + this.distance_top_y)
+      const end_y = Math.max( ~~(cursor_start_y / this.absolute_width) + this.distance_top_y, ~~((cursor_start_y + zoom_area.height) / this.absolute_width ) + this.distance_top_y)
 
-    c(this.distance_top_y)
-
-    
-    //new size when zoomed.
-    let size = end_x - start_x + 1;
-    this.absolute_width = canvas.width / size ;
-    
-
-    
-    matrix_squares.draw_squares(start_x, end_x, start_y, end_y, this.absolute_width)
-
-
-    //FIXME REMOVE ME
-    resizing_img.src = canvas.toDataURL();
+      this.distance_left_x = start_x
+      this.distance_top_y = start_y
+      
+      this.absolute_width = canvas.width / (end_x - start_x + 1) ;
+      matrix_squares.draw_squares(start_x, end_x, start_y, end_y, this.absolute_width)
     }
   }
 }

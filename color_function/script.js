@@ -53,19 +53,17 @@ get_pixel_ratio.addEventListener("change", function () {
 get_size_lower.addEventListener("change", function () {
   let old_size = size_lower
   size_lower = ~~(+get_size_lower.value / pixel_ratio);
-  size = size_upper - size_lower + 1;
-  absolute_width = canvas.width / size ;
   
-  change_size(old_size, 'lower');
+  //TODO FIXME: give size lower and absolute_width as an argument?
+  matrix_squares.change_size(size_lower, size_upper, old_size, 'lower');
   update_images()
 });
 
 get_size_upper.addEventListener("change", function () {
   let old_size = size_upper
   size_upper = ~~(+get_size_upper.value / pixel_ratio);
-  size = size_upper - size_lower + 1;
-  absolute_width = canvas.width / size;
-  change_size(old_size, 'higher');
+
+  matrix_squares.change_size(size_lower, size_upper, old_size, 'higher');
   update_images()
 });
 
@@ -98,35 +96,56 @@ let lightness_expression = get_lightness_expression.value;
 
 //-------------------------------GUIDING BOX FOR RESIZE--------------------
 
-let initial_cursor_position
-let current_cursor_position
+let initial_cursor_position = []
+let current_cursor_position = []
 let mouse_is_down = false
 
-canvas.addEventListener("mousedown", function (e) {
-  initial_cursor_position = get_cursor_position(canvas, e)
-  mouse_is_down = true
 
-});
+// Event listener for all cursor on canvas events
+function handle_canvas_event_zoom(event) {
+  switch (event.type) {
 
-canvas.addEventListener("mousemove", function(event){
-  if (mouse_is_down){
-    current_cursor_position = get_cursor_position(canvas, event);
-    draw_square(ctx, resizing_img, initial_cursor_position[0], current_cursor_position[0], initial_cursor_position[1], current_cursor_position[1])
+    case 'mousedown':
+        initial_cursor_position = get_cursor_position(canvas, event)
+        mouse_is_down = true
+        break;
+
+    case 'mousemove':
+      if (mouse_is_down) {
+        current_cursor_position = get_cursor_position(canvas, event);
+        draw_square(ctx, resizing_img, initial_cursor_position[0], current_cursor_position[0], initial_cursor_position[1], current_cursor_position[1])
+      }
+      break;
+
+    case 'mouseup':
+    case 'mouseout':
+      mouse_is_down = false;
+      if (event.ctrlKey){
+        matrix_squares.absolute_width = absolute_width
+        matrix_squares.distance_left_x = size_lower
+        matrix_squares.distance_top_y = size_lower
+        ctx.drawImage(original_img, 0, 0, canvas.width, canvas.height);
+        resizing_img.src = canvas.toDataURL();
+        return
+      }
+      else if (initial_cursor_position.length && current_cursor_position.length){
+        matrix_squares.zoom(initial_cursor_position[0], current_cursor_position[0], initial_cursor_position[1], current_cursor_position[1])
+        resizing_img.src = canvas.toDataURL();
     
-
+      }
+      initial_cursor_position = [];
+      current_cursor_position = [];
+      break;
+      
+    default:
+      break;
   }
-});
+}
 
-canvas.addEventListener("mouseup", function (event) {
-  mouse_is_down = false;
-  matrix_squares.zoom(ctx, event, initial_cursor_position[0], current_cursor_position[0], initial_cursor_position[1], current_cursor_position[1])
-});
-
-canvas.addEventListener("mouseout", function(event) {
-  mouse_is_down = false;
-  matrix_squares.zoom(ctx, event, initial_cursor_position[0], current_cursor_position[0], initial_cursor_position[1], current_cursor_position[1])
-});
-
+canvas.addEventListener("mousedown", handle_canvas_event_zoom);
+canvas.addEventListener("mousemove", handle_canvas_event_zoom);
+canvas.addEventListener("mouseup", handle_canvas_event_zoom);
+canvas.addEventListener("mouseout", handle_canvas_event_zoom);
 
 let dataURL;
 let original_img = new Image(); //how the image looks when all pixels are drawn at once at their "intended" size
@@ -158,41 +177,7 @@ function winInit() {
 //-----------------------FUNCTIONS------------------------
 
 //TODO: make a method?
-function change_size(old_size_bipartite , change){
 
-  //old_size_bipartite means its either the old size_lower or old size_upper
-  switch (true) {
-
-    //size_upper changed
-    case change === 'higher' && size_upper >= old_size_bipartite:
-    //size of pixel - the old size (abs(size_lower) + abs(size_upper))
-
-      var image_size = ~~((absolute_width) * (old_size_bipartite+1 - size_lower))
-      ctx.drawImage(resizing_img, 0, 0, image_size, image_size);
-      matrix_squares.create_squares(size_lower, old_size_bipartite+1, size_upper, size_upper, absolute_width, pixel_ratio)
-      break;
-
-
-    //size_lower changed
-    case change === 'lower' && size_lower <= old_size_bipartite :
-
-      //size of pixel - the old size (abs(size_lower) + abs(size_upper))
-      var distance_from_top_left = ~~(absolute_width) * (old_size_bipartite - size_lower)
-      var image_size = ~~((absolute_width) * (size_upper - old_size_bipartite + 1 ))
-      ctx.drawImage(resizing_img, distance_from_top_left, distance_from_top_left, image_size, image_size);
-      matrix_squares.create_squares(size_lower, size_lower, old_size_bipartite-1, size_upper, absolute_width, pixel_ratio)
-      dataURL = canvas.toDataURL();
-      original_img.src = dataURL;
-      resizing_img.src = dataURL;
-      break;
-
-    //size_upper has decreased or size_lower has increased
-    default:
-      absolute_width = (canvas.width / size )
-      matrix_squares.draw_squares(size_lower, size_upper, size_lower, size_upper, absolute_width)
-      break;
-  }
-}
 
 //---------------------ZOOMING-------------------
 
@@ -220,9 +205,6 @@ function draw_square(ctx, background_img, cursor_start_x, cursor_end_x, cursor_s
     ctx.stroke();
   }
 }
-
-
-
 
 
 
