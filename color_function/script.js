@@ -55,6 +55,16 @@ get_size_lower.addEventListener("change", function () {
   size_lower = ~~(+get_size_lower.value / pixel_ratio);
   
   //TODO FIXME: give size lower and absolute_width as an argument?
+  
+
+  absolute_width = canvas.width / (size_upper - size_lower + index_zero);
+
+  var distance_from_top_left = ~~(absolute_width) * (old_size- size_lower)
+  var image_size = ~~((absolute_width) * (size_upper - old_size + index_zero ))
+  ctx.drawImage(resizing_img, distance_from_top_left, distance_from_top_left, image_size, image_size);
+
+
+
   matrix_squares.change_size(size_lower, size_upper, old_size, 'lower');
   update_images()
 });
@@ -63,6 +73,17 @@ get_size_upper.addEventListener("change", function () {
   let old_size = size_upper
   size_upper = ~~(+get_size_upper.value / pixel_ratio);
 
+
+  
+  // this.size_lower = size_lower
+  // this.size_upper = size_upper
+  absolute_width = canvas.width / (size_upper - size_lower + index_zero);
+
+  var image_size = ~~((absolute_width) * (old_size+1 - size_lower))
+  ctx.drawImage(resizing_img, 0, 0, image_size, image_size);
+  
+  
+  
   matrix_squares.change_size(size_lower, size_upper, old_size, 'higher');
   update_images()
 });
@@ -167,7 +188,7 @@ function winInit() {
   // ctx.filter = "hue-rotate(200deg)" //INTERESTING!
   size = size_upper - size_lower + index_zero;
   absolute_width = (canvas.width / size ); //width in px of every "pixel" drawn on canvas
-  matrix_squares = new Square_matrix(hue_expression, saturation_expression, lightness_expression, absolute_width)
+  matrix_squares = new Square_matrix(canvas, hue_expression, saturation_expression, lightness_expression)
   matrix_squares.create_squares(size_lower, size_lower, size_upper, size_upper, absolute_width, pixel_ratio)
   
   //FIXME: i want create_squares to draw the image nicely without drawing it twice which is being done now
