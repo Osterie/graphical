@@ -11,67 +11,80 @@ const get_size_upper = document.getElementById("size_upper");
 const get_pixel_ratio = document.getElementById("pixel_ratio");
 const get_upscale_button = document.getElementById("upscale");
 
-function update_images() {
-  dataURL = canvas.toDataURL();
-  original_img.src = dataURL;
-  resizing_img.src = dataURL;
-}
-
 get_hue_expression.addEventListener("change", function () {
   hue_expression = get_hue_expression.value;
   matrix_squares.hue_expression = hue_expression
   matrix_squares.class_method_loop("hue", hue_expression);
-  update_images()
+  update_images(canvas)
 });
 
 get_saturation_expression.addEventListener("change", function () {
   saturation_expression = get_saturation_expression.value;
   matrix_squares.saturation_expression = saturation_expression
   matrix_squares.class_method_loop("saturation", saturation_expression);
-  update_images()
+  update_images(canvas)
 });
 
 get_lightness_expression.addEventListener("change", function () {
   lightness_expression = get_lightness_expression.value;
   matrix_squares.lightness_expression = lightness_expression
   matrix_squares.class_method_loop("lightness", lightness_expression);
-  update_images()
+  update_images(canvas)
 });
 
 get_pixel_ratio.addEventListener("change", function () {
   pixel_ratio = +get_pixel_ratio.value;
   size_upper = ~~(+get_size_upper.value / pixel_ratio);
   size_lower = ~~(+get_size_lower.value / pixel_ratio);
-  size = size_upper - size_lower + 1;
+  size = size_upper - size_lower + index_zero;
   absolute_width = canvas.width / size;
   distance_left_x_zooming = size_lower
   distance_top_y_zooming = size_lower
   matrix_squares.create_squares(size_lower, size_lower, size_upper, size_upper, absolute_width, pixel_ratio)
-  update_images()
+  update_images(canvas)
 });
 
 get_size_lower.addEventListener("change", function () {
   let old_size = size_lower
   size_lower = ~~(+get_size_lower.value / pixel_ratio);
-  size = size_upper - size_lower + 1;
-  absolute_width = canvas.width / size ;
   
-  change_size(old_size, 'lower');
-  update_images()
+  //TODO FIXME: give size lower and absolute_width as an argument?
+  
+
+  absolute_width = canvas.width / (size_upper - size_lower + index_zero);
+
+  var distance_from_top_left = ~~(absolute_width) * (old_size- size_lower)
+  var image_size = ~~((absolute_width) * (size_upper - old_size + index_zero ))
+  ctx.drawImage(resizing_img, distance_from_top_left, distance_from_top_left, image_size, image_size);
+
+
+
+  matrix_squares.change_size(size_lower, size_upper, old_size, 'lower');
+  update_images(canvas)
 });
 
 get_size_upper.addEventListener("change", function () {
   let old_size = size_upper
   size_upper = ~~(+get_size_upper.value / pixel_ratio);
-  size = size_upper - size_lower + 1;
-  absolute_width = canvas.width / size;
-  change_size(old_size, 'higher');
-  update_images()
+
+
+  
+  // this.size_lower = size_lower
+  // this.size_upper = size_upper
+  absolute_width = canvas.width / (size_upper - size_lower + index_zero);
+
+  var image_size = ~~((absolute_width) * (old_size+1 - size_lower))
+  ctx.drawImage(resizing_img, 0, 0, image_size, image_size);
+  
+  
+  
+  matrix_squares.change_size(size_lower, size_upper, old_size, 'higher');
+  update_images(canvas)
 });
 
 get_upscale_button.addEventListener("click", function () {
   matrix_squares.draw_squares(size_lower, size_upper, size_lower, size_upper, absolute_width)
-  update_images()
+  update_images(canvas)
 });
 
 //-----------------------Canvas-----------------------------
@@ -85,10 +98,11 @@ const ctx = canvas.getContext("2d", { alpha: false });
 
 //----------------Creation of pixels--------------------------------
 
+const index_zero = 1
 let matrix_pixels = [];
 let size_lower = +get_size_lower.value;
 let size_upper = +get_size_upper.value;
-let size = size_upper - size_lower + 1;
+let size = size_upper - size_lower + index_zero;
 let absolute_width;
 var pixel_ratio = parseFloat(get_pixel_ratio.value);
 
@@ -98,35 +112,56 @@ let lightness_expression = get_lightness_expression.value;
 
 //-------------------------------GUIDING BOX FOR RESIZE--------------------
 
-let initial_cursor_position
-let current_cursor_position
+let initial_cursor_position = []
+let current_cursor_position = []
 let mouse_is_down = false
 
-canvas.addEventListener("mousedown", function (e) {
-  initial_cursor_position = get_cursor_position(canvas, e)
-  mouse_is_down = true
 
-});
+// Event listener for all cursor on canvas events
+function handle_canvas_event_zoom(event) {
+  switch (event.type) {
 
-canvas.addEventListener("mousemove", function(event){
-  if (mouse_is_down){
-    current_cursor_position = get_cursor_position(canvas, event);
-    draw_square(ctx, resizing_img, initial_cursor_position[0], current_cursor_position[0], initial_cursor_position[1], current_cursor_position[1])
+    case 'mousedown':
+        initial_cursor_position = get_cursor_position(canvas, event)
+        mouse_is_down = true
+        break;
+
+    case 'mousemove':
+      if (mouse_is_down) {
+        current_cursor_position = get_cursor_position(canvas, event);
+        draw_square(canvas, resizing_img, initial_cursor_position[0], current_cursor_position[0], initial_cursor_position[1], current_cursor_position[1])
+      }
+      break;
+
+    case 'mouseup':
+    case 'mouseout':
+      mouse_is_down = false;
+      if (event.ctrlKey){
+        matrix_squares.absolute_width = absolute_width
+        matrix_squares.distance_left_x = size_lower
+        matrix_squares.distance_top_y = size_lower
+        ctx.drawImage(original_img, 0, 0, canvas.width, canvas.height);
+        resizing_img.src = canvas.toDataURL();
+        return
+      }
+      else if (initial_cursor_position.length && current_cursor_position.length){
+        matrix_squares.zoom(initial_cursor_position[0], current_cursor_position[0], initial_cursor_position[1], current_cursor_position[1])
+        resizing_img.src = canvas.toDataURL();
     
-
+      }
+      initial_cursor_position = [];
+      current_cursor_position = [];
+      break;
+      
+    default:
+      break;
   }
-});
+}
 
-canvas.addEventListener("mouseup", function (event) {
-  mouse_is_down = false;
-  matrix_squares.zoom(ctx, event, initial_cursor_position[0], current_cursor_position[0], initial_cursor_position[1], current_cursor_position[1])
-});
-
-canvas.addEventListener("mouseout", function(event) {
-  mouse_is_down = false;
-  matrix_squares.zoom(ctx, event, initial_cursor_position[0], current_cursor_position[0], initial_cursor_position[1], current_cursor_position[1])
-});
-
+canvas.addEventListener("mousedown", handle_canvas_event_zoom);
+canvas.addEventListener("mousemove", handle_canvas_event_zoom);
+canvas.addEventListener("mouseup", handle_canvas_event_zoom);
+canvas.addEventListener("mouseout", handle_canvas_event_zoom);
 
 let dataURL;
 let original_img = new Image(); //how the image looks when all pixels are drawn at once at their "intended" size
@@ -145,240 +180,21 @@ window.onload = winInit;
 function winInit() {
 
   // ctx.filter = "hue-rotate(200deg)" //INTERESTING!
-  size = size_upper - size_lower + 1;
+  size = size_upper - size_lower + index_zero;
   absolute_width = (canvas.width / size ); //width in px of every "pixel" drawn on canvas
-  matrix_squares = new Square_matrix(hue_expression, saturation_expression, lightness_expression, absolute_width)
+  matrix_squares = new Square_matrix(canvas, hue_expression, saturation_expression, lightness_expression)
   matrix_squares.create_squares(size_lower, size_lower, size_upper, size_upper, absolute_width, pixel_ratio)
   
-  //FIXME: i want create_squares to draw the image nicely without drawing it twice which is being done now
-  matrix_squares.draw_squares(size_lower, size_upper, size_lower, size_upper, absolute_width)
-  update_images()
+  update_images(canvas)
 }
 
-//-----------------------FUNCTIONS------------------------
+//\\\\\\\\\\\\\\\\\\\\FUNCTIONS\\\\\\\\\\\\\\\\\\\\\\\
 
-//TODO: make a method?
-function change_size(old_size_bipartite , change){
-
-  //old_size_bipartite means its either the old size_lower or old size_upper
-  switch (true) {
-
-    //size_upper changed
-    case change === 'higher' && size_upper >= old_size_bipartite:
-    //size of pixel - the old size (abs(size_lower) + abs(size_upper))
-
-      var image_size = ~~((absolute_width) * (old_size_bipartite+1 - size_lower))
-      ctx.drawImage(resizing_img, 0, 0, image_size, image_size);
-      matrix_squares.create_squares(size_lower, old_size_bipartite+1, size_upper, size_upper, absolute_width, pixel_ratio)
-      break;
-
-
-    //size_lower changed
-    case change === 'lower' && size_lower <= old_size_bipartite :
-
-      //size of pixel - the old size (abs(size_lower) + abs(size_upper))
-      var distance_from_top_left = ~~(absolute_width) * (old_size_bipartite - size_lower)
-      var image_size = ~~((absolute_width) * (size_upper - old_size_bipartite + 1 ))
-      ctx.drawImage(resizing_img, distance_from_top_left, distance_from_top_left, image_size, image_size);
-      matrix_squares.create_squares(size_lower, size_lower, old_size_bipartite-1, size_upper, absolute_width, pixel_ratio)
-      dataURL = canvas.toDataURL();
-      original_img.src = dataURL;
-      resizing_img.src = dataURL;
-      break;
-
-    //size_upper has decreased or size_lower has increased
-    default:
-      absolute_width = (canvas.width / size )
-      matrix_squares.draw_squares(size_lower, size_upper, size_lower, size_upper, absolute_width)
-      break;
-  }
+function update_images(canvas){
+  dataURL = canvas.toDataURL();
+  original_img.src = dataURL;
+  resizing_img.src = dataURL;
 }
-
-//---------------------ZOOMING-------------------
-
-//TODO: Make more general!!!!!
-//get_cursor_position should have nothing to do with zoom_guider, and vice versa, 
-//maybe return something?
-
-//do mousedown get_cursor_position, which is the initial position.
-//mouse move gives the current mouseposition
-//mouseup gives last cursor position and then draaaaws
-
-
-
-//     //by setting index 0 and 1 to the same, when clicking a pixel you get the color
-//     clicked_released_xpos = [down_x, down_x];
-//     clicked_released_ypos = [down_y, down_y];
-  
-
-
-//     if (event.ctrlKey) {
-//       size = size_upper - size_lower + 1;
-//       absolute_width = canvas.width / size;
-//       distance_left_x_zooming = size_lower
-//       distance_top_y_zooming = size_lower
-//       ctx.drawImage(original_img, 0, 0, 600, 600);
-//       resizing_img.src = canvas.toDataURL();
-//       original_img.src = canvas.toDataURL();
-//       return;
-//     }
-
-//     else {
-
-//       //sorts array from lowest to highest
-//       clicked_released_xpos.sort(function (a, b) {return a - b;});
-//       clicked_released_ypos.sort(function (a, b) {return a - b;});
-
-//       let start_x = ~~(clicked_released_xpos[0] / absolute_width) + distance_left_x_zooming;
-//       let end_x = ~~(clicked_released_xpos[1] / absolute_width) + distance_left_x_zooming;
-
-//       let start_y = (~~(clicked_released_ypos[0] / absolute_width) + distance_top_y_zooming);
-//       let end_y = (~~(clicked_released_ypos[1] / absolute_width) + distance_top_y_zooming);
-
-
-//       //These if else statements ensure better zooming
-//       if (end_x - start_x > end_y - start_y) {
-//         if (start_y-1 >= size_lower && start_y-1 <= size_upper){
-//           start_y -= 1;
-//         }
-//         else{
-//           end_y += 1
-//         }
-//       }
-//       else if (end_x - start_x < end_y - start_y) {
-//         if (start_x-1 >= size_lower && start_x-1 <= size_upper){
-//           start_x -= 1;
-//         }
-//         else{
-//           end_x += 1;
-//         }
-//       }
-
-//       distance_left_x_zooming = start_x
-//       distance_top_y_zooming = start_y
-
-//     }
-// }
-
-
-
-
-
-
-
-
-//FIXME not using canvas argument...
-function get_cursor_position(canvas, event) {
-  //finds the absolute coordinates clicked, given as distence from top left.
-  return [event.offsetX, event.offsetY];
-
-    // let cursor_position_x = event.offsetX;
-    // let cursor_position_y = event.offsetY;
-    // return [cursor_position_x, cursor_position_y];
-}
-
-
-// add mouse down and mouse up eventlistenerss
-// add a class method for zooming.
-// function get_cursor_position(canvas, event) {
-
-//   //starting point mousedown cursor.
-//   if (event.type == "mousedown") {
-
-//     //finds the absolute coordinates clicked
-//     let down_x = event.offsetX;
-//     let down_y = event.offsetY;
-
-//     //by setting index 0 and 1 to the same, when clicking a pixel you get the color
-//     clicked_released_xpos = [down_x, down_x];
-//     clicked_released_ypos = [down_y, down_y];
-//   }
-
-//   //last point of cursor mouseup
-//   else {
-//     canvas.removeEventListener("mousemove", zoom_guider);
-
-//     //unzooms
-//     if (event.ctrlKey) {
-//       size = size_upper - size_lower + 1;
-//       absolute_width = canvas.width / size;
-//       distance_left_x_zooming = size_lower
-//       distance_top_y_zooming = size_lower
-//       ctx.drawImage(original_img, 0, 0, 600, 600);
-//       resizing_img.src = canvas.toDataURL();
-//       original_img.src = canvas.toDataURL();
-//       return;
-//     }
-
-//     //zooms
-//     else {
-
-//       //sorts array from lowest to highest
-//       clicked_released_xpos.sort(function (a, b) {return a - b;});
-//       clicked_released_ypos.sort(function (a, b) {return a - b;});
-
-//       //drawn from start_x to end_x
-//       let start_x = ~~(clicked_released_xpos[0] / absolute_width) + distance_left_x_zooming;
-//       let end_x = ~~(clicked_released_xpos[1] / absolute_width) + distance_left_x_zooming;
-
-//       //drawn from start_y to end_y
-//       let start_y = (~~(clicked_released_ypos[0] / absolute_width) + distance_top_y_zooming);
-//       let end_y = (~~(clicked_released_ypos[1] / absolute_width) + distance_top_y_zooming);
-
-
-//       //These if else statements ensure better zooming
-//       if (end_x - start_x > end_y - start_y) {
-//         if (start_y-1 >= size_lower && start_y-1 <= size_upper){
-//           start_y -= 1;
-//         }
-//         else{
-//           end_y += 1
-//         }
-//       }
-//       else if (end_x - start_x < end_y - start_y) {
-//         if (start_x-1 >= size_lower && start_x-1 <= size_upper){
-//           start_x -= 1;
-//         }
-//         else{
-//           end_x += 1;
-//         }
-//       }
-
-//       //used for zooming multiple times, tells the distance from left wall and top wall on second, third... nth zoom
-//       //might be able to find solution not using these values? not worth it?
-//         = start_x
-//       distance_top_y_zooming = start_y
-
-//       //new size when zoomed.
-//       size = end_x - start_x + 1;
-//       absolute_width = canvas.width / size ;
-
-//       matrix_squares.draw_squares(start_x, end_x, start_y, end_y, absolute_width)
-//       resizing_img.src = canvas.toDataURL();;
-//     }
-//   }
-// }
-
-
-
-function draw_square(ctx, background_img, cursor_start_x, cursor_end_x, cursor_start_y, cursor_end_y) {
-
-  let current_square = (largest_drawable_square( cursor_start_x, cursor_end_x, cursor_start_y, cursor_end_y))
-
-  let parameter_x = cursor_start_x + ~~current_square.width;
-  let parameter_y = cursor_start_y + ~~current_square.height;
-  //Draws the guiding box if it fits the canvas
-  if ( (parameter_x < canvas.width && parameter_x > 0) && (parameter_y < canvas.height && parameter_y > 0 )){
-    
-    // clicked_released_xpos[1] = parameter_x;
-    // clicked_released_ypos[1] = parameter_y;
-    ctx.drawImage(background_img, 0, 0, canvas.width, canvas.height);
-    ctx.beginPath();
-    ctx.rect(cursor_start_x, cursor_start_y, current_square.width, current_square.height);
-    ctx.stroke();
-  }
-}
-
 
 
 
@@ -435,5 +251,7 @@ function draw_square(ctx, background_img, cursor_start_x, cursor_end_x, cursor_s
 //* make it so that you can only draw complete pixels with zoom_guider, and only draw and show the pixels "selected"
 //* HUGE create own functions and such instead of using fulabl libraries. Functions to be made self include : drawFyltRektangel, drawfirkant, drawBrukXY, drawBrukBakgrunn, drawBrukSynsfelt, drawBrukCanvas
 //* size_lower_changed and size_upper_changed turned into one function
-//*WONTFIX Minor fix in the new_pixels function, it creates the corner piece twice
-//*make it possible to zoom in on inzoomed image.
+//* WONTFIX Minor fix in the new_pixels function, it creates the corner piece twice
+//* make it possible to zoom in on inzoomed image.
+//* made zooming more general
+//* made functions into methods
