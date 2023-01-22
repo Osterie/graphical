@@ -62,7 +62,7 @@ class Square_matrix {
     }
   
     create_squares(start_x, start_y, width, length, square_dimensions, pixel_ratio){
-       //column
+      //column
       //width is locally declared as width for improved performance by reducing amount of property lookups
       for (let x = start_x, runs = width; x <= runs; x++) {
         if (this.square_matrix[x] == undefined) {
@@ -96,7 +96,6 @@ class Square_matrix {
       for (let x = start_y, runs = length; x <= runs; x++) {
         if (this.square_matrix[x] == undefined) {
           this.square_matrix[x] = [];
-          // this.square_matrix[x] = new    Array(~~width);
         }
     
         for (let y = start_x, runs = width; y <= runs; y++) {
@@ -180,17 +179,8 @@ class Square_matrix {
     let start_y = Math.min(~~(cursor_start_y / this.absolute_width) + this.distance_top_y,  ~~( (cursor_start_y + zoom_area.height) / this.absolute_width ) + this.distance_top_y)
     let end_y = Math.max(~~(cursor_start_y / this.absolute_width) + this.distance_top_y,  ~~( (cursor_start_y + zoom_area.height) / this.absolute_width ) + this.distance_top_y)
 
-
+      end_y += 1
     c(this.distance_top_y)
-
-    // c({start_y, end_y})
-
-
-    // let start_x = ~~(cursor_start_x / this.absolute_width) + this.size_lower
-    // let end_x = ~~( (cursor_start_x + width) / this.absolute_width ) + this.size_lower
-
-    // let start_y = ~~(cursor_start_y / this.absolute_width) + this.size_lower
-    // let end_y = ~~( (cursor_start_y + height) / this.absolute_width ) + this.size_lower
     
     this.distance_left_x = start_x
     this.distance_top_y = start_y
@@ -211,70 +201,4 @@ class Square_matrix {
     resizing_img.src = canvas.toDataURL();
     }
   }
-
-
-//   if (event.ctrlKey) {
-  //     // this.absolute_width = canvas.width / (size_upper - size_lower + 1);
-  //     this.distance_left_x = this.size_lower
-  //     this.distance_top_y = this.size_lower
-  //     ctx.drawImage(original_img, 0, 0, 600, 600);
-  //     resizing_img.src = canvas.toDataURL();
-  //     original_img.src = canvas.toDataURL();
-  //     return;
-  //   }
-
-  //   //zooms
-  //   //FIXME when mouseuot it runs this shit
-  //   else{
-
-  //     //sorts array from lowest to highest
-  //     let clicked_released_xpos = [cursor_start_x, cursor_end_x]
-  //     let clicked_released_ypos = [cursor_start_y, cursor_end_y]
-
-  //     clicked_released_xpos.sort(function (a, b) {return a - b;});
-  //     clicked_released_ypos.sort(function (a, b) {return a - b;});
-
-
-  //     //drawn from start_x to end_x
-  //     let start_x = ~~(clicked_released_xpos[0] / this.absolute_width) + this.distance_left_x;
-  //     let end_x = ~~(clicked_released_xpos[1] / this.absolute_width) + this.distance_left_x;
-
-  //     //drawn from start_y to end_y
-  //     let start_y = (~~(clicked_released_ypos[0] / this.absolute_width) + this.distance_top_y);
-  //     let end_y = (~~(clicked_released_ypos[1] / this.absolute_width) + this.distance_top_y);
-
-
-  //     //These if else statements ensure better zooming
-  //     if (end_x - start_x > end_y - start_y) {
-  //       if (start_y-1 >= size_lower && start_y-1 <= size_upper){
-  //         start_y -= 1;
-  //       }
-  //       else{
-  //         end_y += 1
-  //       }
-  //     }
-  //     else if (end_x - start_x < end_y - start_y) {
-  //       if (start_x-1 >= size_lower && start_x-1 <= size_upper){
-  //         start_x -= 1;
-  //       }
-  //       else{
-  //         end_x += 1;
-  //       }
-  //     }
-
-  //     //used for zooming multiple times, tells the distance from left wall and top wall on second, third... nth zoom
-  //     //might be able to find solution not using these values? not worth it?
-  //     this.distance_left_x = start_x
-  //     this.distance_top_y = start_y
-
-  //     //new size when zoomed.
-  //     let size = end_x - start_x + 1;
-  //     this.absolute_width = canvas.width / size ;
-
-  //     console.log({start_x, end_x, start_y, end_y})
-      
-  //     matrix_squares.draw_squares(start_x, end_x, start_y, end_y, this.absolute_width)
-  //     resizing_img.src = canvas.toDataURL();;
-  // }
-  // }
 }

@@ -196,169 +196,12 @@ function change_size(old_size_bipartite , change){
 
 //---------------------ZOOMING-------------------
 
-//TODO: Make more general!!!!!
-//get_cursor_position should have nothing to do with zoom_guider, and vice versa, 
-//maybe return something?
-
-//do mousedown get_cursor_position, which is the initial position.
-//mouse move gives the current mouseposition
-//mouseup gives last cursor position and then draaaaws
-
-
-
-//     //by setting index 0 and 1 to the same, when clicking a pixel you get the color
-//     clicked_released_xpos = [down_x, down_x];
-//     clicked_released_ypos = [down_y, down_y];
-  
-
-
-//     if (event.ctrlKey) {
-//       size = size_upper - size_lower + 1;
-//       absolute_width = canvas.width / size;
-//       distance_left_x_zooming = size_lower
-//       distance_top_y_zooming = size_lower
-//       ctx.drawImage(original_img, 0, 0, 600, 600);
-//       resizing_img.src = canvas.toDataURL();
-//       original_img.src = canvas.toDataURL();
-//       return;
-//     }
-
-//     else {
-
-//       //sorts array from lowest to highest
-//       clicked_released_xpos.sort(function (a, b) {return a - b;});
-//       clicked_released_ypos.sort(function (a, b) {return a - b;});
-
-//       let start_x = ~~(clicked_released_xpos[0] / absolute_width) + distance_left_x_zooming;
-//       let end_x = ~~(clicked_released_xpos[1] / absolute_width) + distance_left_x_zooming;
-
-//       let start_y = (~~(clicked_released_ypos[0] / absolute_width) + distance_top_y_zooming);
-//       let end_y = (~~(clicked_released_ypos[1] / absolute_width) + distance_top_y_zooming);
-
-
-//       //These if else statements ensure better zooming
-//       if (end_x - start_x > end_y - start_y) {
-//         if (start_y-1 >= size_lower && start_y-1 <= size_upper){
-//           start_y -= 1;
-//         }
-//         else{
-//           end_y += 1
-//         }
-//       }
-//       else if (end_x - start_x < end_y - start_y) {
-//         if (start_x-1 >= size_lower && start_x-1 <= size_upper){
-//           start_x -= 1;
-//         }
-//         else{
-//           end_x += 1;
-//         }
-//       }
-
-//       distance_left_x_zooming = start_x
-//       distance_top_y_zooming = start_y
-
-//     }
-// }
-
-
-
-
-
-
-
 
 //FIXME not using canvas argument...
 function get_cursor_position(canvas, event) {
   //finds the absolute coordinates clicked, given as distence from top left.
   return [event.offsetX, event.offsetY];
-
-    // let cursor_position_x = event.offsetX;
-    // let cursor_position_y = event.offsetY;
-    // return [cursor_position_x, cursor_position_y];
 }
-
-
-// add mouse down and mouse up eventlistenerss
-// add a class method for zooming.
-// function get_cursor_position(canvas, event) {
-
-//   //starting point mousedown cursor.
-//   if (event.type == "mousedown") {
-
-//     //finds the absolute coordinates clicked
-//     let down_x = event.offsetX;
-//     let down_y = event.offsetY;
-
-//     //by setting index 0 and 1 to the same, when clicking a pixel you get the color
-//     clicked_released_xpos = [down_x, down_x];
-//     clicked_released_ypos = [down_y, down_y];
-//   }
-
-//   //last point of cursor mouseup
-//   else {
-//     canvas.removeEventListener("mousemove", zoom_guider);
-
-//     //unzooms
-//     if (event.ctrlKey) {
-//       size = size_upper - size_lower + 1;
-//       absolute_width = canvas.width / size;
-//       distance_left_x_zooming = size_lower
-//       distance_top_y_zooming = size_lower
-//       ctx.drawImage(original_img, 0, 0, 600, 600);
-//       resizing_img.src = canvas.toDataURL();
-//       original_img.src = canvas.toDataURL();
-//       return;
-//     }
-
-//     //zooms
-//     else {
-
-//       //sorts array from lowest to highest
-//       clicked_released_xpos.sort(function (a, b) {return a - b;});
-//       clicked_released_ypos.sort(function (a, b) {return a - b;});
-
-//       //drawn from start_x to end_x
-//       let start_x = ~~(clicked_released_xpos[0] / absolute_width) + distance_left_x_zooming;
-//       let end_x = ~~(clicked_released_xpos[1] / absolute_width) + distance_left_x_zooming;
-
-//       //drawn from start_y to end_y
-//       let start_y = (~~(clicked_released_ypos[0] / absolute_width) + distance_top_y_zooming);
-//       let end_y = (~~(clicked_released_ypos[1] / absolute_width) + distance_top_y_zooming);
-
-
-//       //These if else statements ensure better zooming
-//       if (end_x - start_x > end_y - start_y) {
-//         if (start_y-1 >= size_lower && start_y-1 <= size_upper){
-//           start_y -= 1;
-//         }
-//         else{
-//           end_y += 1
-//         }
-//       }
-//       else if (end_x - start_x < end_y - start_y) {
-//         if (start_x-1 >= size_lower && start_x-1 <= size_upper){
-//           start_x -= 1;
-//         }
-//         else{
-//           end_x += 1;
-//         }
-//       }
-
-//       //used for zooming multiple times, tells the distance from left wall and top wall on second, third... nth zoom
-//       //might be able to find solution not using these values? not worth it?
-//         = start_x
-//       distance_top_y_zooming = start_y
-
-//       //new size when zoomed.
-//       size = end_x - start_x + 1;
-//       absolute_width = canvas.width / size ;
-
-//       matrix_squares.draw_squares(start_x, end_x, start_y, end_y, absolute_width)
-//       resizing_img.src = canvas.toDataURL();;
-//     }
-//   }
-// }
-
 
 
 function draw_square(ctx, background_img, cursor_start_x, cursor_end_x, cursor_start_y, cursor_end_y) {
@@ -370,8 +213,7 @@ function draw_square(ctx, background_img, cursor_start_x, cursor_end_x, cursor_s
   //Draws the guiding box if it fits the canvas
   if ( (parameter_x < canvas.width && parameter_x > 0) && (parameter_y < canvas.height && parameter_y > 0 )){
     
-    // clicked_released_xpos[1] = parameter_x;
-    // clicked_released_ypos[1] = parameter_y;
+
     ctx.drawImage(background_img, 0, 0, canvas.width, canvas.height);
     ctx.beginPath();
     ctx.rect(cursor_start_x, cursor_start_y, current_square.width, current_square.height);
@@ -435,5 +277,6 @@ function draw_square(ctx, background_img, cursor_start_x, cursor_end_x, cursor_s
 //* make it so that you can only draw complete pixels with zoom_guider, and only draw and show the pixels "selected"
 //* HUGE create own functions and such instead of using fulabl libraries. Functions to be made self include : drawFyltRektangel, drawfirkant, drawBrukXY, drawBrukBakgrunn, drawBrukSynsfelt, drawBrukCanvas
 //* size_lower_changed and size_upper_changed turned into one function
-//*WONTFIX Minor fix in the new_pixels function, it creates the corner piece twice
-//*make it possible to zoom in on inzoomed image.
+// *WONTFIX Minor fix in the new_pixels function, it creates the corner piece twice
+// *make it possible to zoom in on inzoomed image.
+//* made zoominf more general
