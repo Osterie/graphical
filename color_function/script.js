@@ -1,5 +1,4 @@
 //---------------------Accessing DOM elements------------------------
-//TODO: size is only used to change absolute_width
 
 const c =  console.log.bind(console);
 
@@ -13,21 +12,21 @@ const get_upscale_button = document.getElementById("upscale");
 
 get_hue_expression.addEventListener("change", function () {
   hue_expression = get_hue_expression.value;
-  matrix_squares.hue_expression = hue_expression
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
   matrix_squares.class_method_loop("hue", hue_expression);
   update_images(canvas)
 });
 
 get_saturation_expression.addEventListener("change", function () {
   saturation_expression = get_saturation_expression.value;
-  matrix_squares.saturation_expression = saturation_expression
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
   matrix_squares.class_method_loop("saturation", saturation_expression);
   update_images(canvas)
 });
 
 get_lightness_expression.addEventListener("change", function () {
   lightness_expression = get_lightness_expression.value;
-  matrix_squares.lightness_expression = lightness_expression
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
   matrix_squares.class_method_loop("lightness", lightness_expression);
   update_images(canvas)
 });
@@ -36,11 +35,9 @@ get_pixel_ratio.addEventListener("change", function () {
   pixel_ratio = +get_pixel_ratio.value;
   size_upper = ~~(+get_size_upper.value / pixel_ratio);
   size_lower = ~~(+get_size_lower.value / pixel_ratio);
-  size = size_upper - size_lower + index_zero;
-  absolute_width = canvas.width / size;
   distance_left_x_zooming = size_lower
   distance_top_y_zooming = size_lower
-  matrix_squares.create_squares(size_lower, size_lower, size_upper, size_upper, absolute_width, pixel_ratio)
+  matrix_squares.create_squares(size_lower, size_lower, size_upper, size_upper, pixel_ratio)
   update_images(canvas)
 });
 
@@ -48,13 +45,10 @@ get_size_lower.addEventListener("change", function () {
   let old_size = size_lower
   size_lower = ~~(+get_size_lower.value / pixel_ratio);
   
-  //TODO FIXME: give size lower and absolute_width as an argument?
-  
 
-  absolute_width = canvas.width / (size_upper - size_lower + index_zero);
-
-  var distance_from_top_left = ~~(absolute_width) * (old_size- size_lower)
-  var image_size = ~~((absolute_width) * (size_upper - old_size + index_zero ))
+  const absolute_width = canvas.width / (size_upper - size_lower + index_zero);
+  var distance_from_top_left = (absolute_width) * (old_size - size_lower)
+  var image_size = ((absolute_width) * (size_upper - old_size + index_zero ))
   ctx.drawImage(resizing_img, distance_from_top_left, distance_from_top_left, image_size, image_size);
 
 
@@ -67,13 +61,8 @@ get_size_upper.addEventListener("change", function () {
   let old_size = size_upper
   size_upper = ~~(+get_size_upper.value / pixel_ratio);
 
-
-  
-  // this.size_lower = size_lower
-  // this.size_upper = size_upper
-  absolute_width = canvas.width / (size_upper - size_lower + index_zero);
-
-  var image_size = ~~((absolute_width) * (old_size+1 - size_lower))
+  const absolute_width = canvas.width / (size_upper - size_lower + index_zero);
+  var image_size = ((absolute_width) * (old_size - size_lower + index_zero))
   ctx.drawImage(resizing_img, 0, 0, image_size, image_size);
   
   
@@ -83,7 +72,7 @@ get_size_upper.addEventListener("change", function () {
 });
 
 get_upscale_button.addEventListener("click", function () {
-  matrix_squares.draw_squares(size_lower, size_upper, size_lower, size_upper, absolute_width)
+  matrix_squares.draw_squares(size_lower, size_upper, size_lower, size_upper)
   update_images(canvas)
 });
 
@@ -103,14 +92,13 @@ let matrix_pixels = [];
 let size_lower = +get_size_lower.value;
 let size_upper = +get_size_upper.value;
 let size = size_upper - size_lower + index_zero;
-let absolute_width;
 var pixel_ratio = parseFloat(get_pixel_ratio.value);
 
 let hue_expression = get_hue_expression.value;
 let saturation_expression = get_saturation_expression.value;
 let lightness_expression = get_lightness_expression.value;
 
-//-------------------------------GUIDING BOX FOR RESIZE--------------------
+//-------------------------------ZOOMING--------------------
 
 let initial_cursor_position = []
 let current_cursor_position = []
@@ -137,6 +125,8 @@ function handle_canvas_event_zoom(event) {
     case 'mouseout':
       mouse_is_down = false;
       if (event.ctrlKey){
+        
+        const absolute_width = canvas.width / (size_upper - size_lower + index_zero)
         matrix_squares.absolute_width = absolute_width
         matrix_squares.distance_left_x = size_lower
         matrix_squares.distance_top_y = size_lower
@@ -144,11 +134,12 @@ function handle_canvas_event_zoom(event) {
         resizing_img.src = canvas.toDataURL();
         return
       }
+      
       else if (initial_cursor_position.length && current_cursor_position.length){
         matrix_squares.zoom(initial_cursor_position[0], current_cursor_position[0], initial_cursor_position[1], current_cursor_position[1])
         resizing_img.src = canvas.toDataURL();
-    
       }
+
       initial_cursor_position = [];
       current_cursor_position = [];
       break;
@@ -178,26 +169,20 @@ var distance_top_y_zooming = size_lower
 
 window.onload = winInit;
 function winInit() {
-
   // ctx.filter = "hue-rotate(200deg)" //INTERESTING!
-  size = size_upper - size_lower + index_zero;
-  absolute_width = (canvas.width / size ); //width in px of every "pixel" drawn on canvas
   matrix_squares = new Square_matrix(canvas, hue_expression, saturation_expression, lightness_expression)
-  matrix_squares.create_squares(size_lower, size_lower, size_upper, size_upper, absolute_width, pixel_ratio)
-  
+  matrix_squares.create_squares(size_lower, size_lower, size_upper, size_upper, pixel_ratio)
   update_images(canvas)
 }
 
 //\\\\\\\\\\\\\\\\\\\\FUNCTIONS\\\\\\\\\\\\\\\\\\\\\\\
 
 function update_images(canvas){
+  //TODO: not really a general function...
   dataURL = canvas.toDataURL();
   original_img.src = dataURL;
   resizing_img.src = dataURL;
 }
-
-
-
 
 
 //------------------START--------------------

@@ -7,21 +7,18 @@
 	<title>Grafisk fremstilling av temperaturer</title>
 	<link rel="stylesheet" type="text/css" href="style.css" />
 
-	<script src=https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.3.0/math.min.js></script>
-
 </head>
 
 <body>
 
 	<center>
-		<p> Write an expression with X and Y(only capitalized letters) (Can use Math.sin(X)*100 and such)</p> 
+		<p> Write an expression with X and Y(only capitalized letters) (Can use Math.sin(X)*100 and such)</p>
 		<p> Zoom using mouse and drag, hold ctrl and click to unzoom</p>
-		
-		<!-- <button id='reset'> Reset Configs(NA)</button> -->
 
-		<textarea id='hue_expression' cols="40" rows="5">X*Y</textarea>
+		<!-- <button id='reset'> Reset Configs(NA)</button> -->
+		<textarea id='hue_expression' placeholder="Hue" cols="40" rows="5">X*Y</textarea>
 		<textarea id='saturation_expression' placeholder="Saturation" cols="40" rows="5">100</textarea>
-		<textarea id='lightness_expression' placeholder="Hue" cols="40" rows="5">50</textarea>
+		<textarea id='lightness_expression' placeholder="Lightness" cols="40" rows="5">50</textarea>
 
 		<input id='pixel_ratio' type="text" placeholder="Pixel Ratio" value="1">
 		<input id='size_lower' type='number' placeholder="Size Lower" value='-10'>
@@ -33,16 +30,14 @@
 		<canvas id="canvas" width="600px" height="600px"> </canvas> <br>
 	</center>
 
-	<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script> For saving of files -->
-	<!-- <script src="https://fulab.no/skolemappe/faa-vgs/bibliotek/IT-2/teamtools.js"> </script> -->
-	<!-- <script src="https://fulab.no/fulibs/fusionSDK.js"> </script> -->
-	<!--  Fulab functions and such-->
-	
+
+	<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.3.0/math.min.js"></script> -->
+
+	<script src="./library/mathjs/node_modules/mathjs/lib/browser/math.js"></script>
 	<script src="./library/functions.js"></script> <!-- Can convert vectors to angles (degress or radians) -->
 	<script src="./library/classdefinitions.js"></script>
 	<!-- <script src="worker.js"></script> -->
 	<script src="script.js"> </script>
 </body>
-
 
 </html>
