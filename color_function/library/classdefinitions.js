@@ -1,8 +1,3 @@
-//IMPROVEMENT AREAS
-
-//5 It might be more efficient to use a single method to handle the hue, saturation, and lightness calculations, instead of having separate methods for each in the Square class.
-
-
 class Square {
   constructor(ctx, xpos, ypos, hue, saturation, lightness, square_size) {
     this.xpos = xpos;

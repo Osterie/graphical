@@ -2,13 +2,13 @@
 
 const c =  console.log.bind(console);
 
-const get_hue_expression = document.getElementById("hue_expression");
-const get_saturation_expression = document.getElementById("saturation_expression");
-const get_lightness_expression = document.getElementById("lightness_expression");
-const get_size_lower = document.getElementById("size_lower");
-const get_size_upper = document.getElementById("size_upper");
-const get_pixel_ratio = document.getElementById("pixel_ratio");
-const get_upscale_button = document.getElementById("upscale");
+const get_hue_expression = document.querySelector("#hue_expression");
+const get_saturation_expression = document.querySelector("#saturation_expression");
+const get_lightness_expression = document.querySelector("#lightness_expression");
+const get_size_lower = document.querySelector("#size_lower");
+const get_size_upper = document.querySelector("#size_upper");
+const get_pixel_ratio = document.querySelector("#pixel_ratio");
+const get_upscale_button = document.querySelector("#upscale");
 
 get_hue_expression.addEventListener("change", function () {
   hue_expression = get_hue_expression.value;
@@ -33,8 +33,8 @@ get_lightness_expression.addEventListener("change", function () {
 
 get_pixel_ratio.addEventListener("change", function () {
   pixel_ratio = +get_pixel_ratio.value;
-  size_upper = ~~(+get_size_upper.value / pixel_ratio);
-  size_lower = ~~(+get_size_lower.value / pixel_ratio);
+  size_upper = Math.floor(+get_size_upper.value / pixel_ratio);
+  size_lower = Math.floor(+get_size_lower.value / pixel_ratio);
   distance_left_x_zooming = size_lower
   distance_top_y_zooming = size_lower
   matrix_squares.create_squares(size_lower, size_lower, size_upper, size_upper, pixel_ratio)
@@ -43,9 +43,7 @@ get_pixel_ratio.addEventListener("change", function () {
 
 get_size_lower.addEventListener("change", function () {
   let old_size = size_lower
-  size_lower = ~~(+get_size_lower.value / pixel_ratio);
-  
-
+  size_lower = Math.floor(+get_size_lower.value / pixel_ratio);
   const absolute_width = canvas.width / (size_upper - size_lower + index_zero);
   var distance_from_top_left = (absolute_width) * (old_size - size_lower)
   var image_size = ((absolute_width) * (size_upper - old_size + index_zero ))
@@ -59,13 +57,11 @@ get_size_lower.addEventListener("change", function () {
 
 get_size_upper.addEventListener("change", function () {
   let old_size = size_upper
-  size_upper = ~~(+get_size_upper.value / pixel_ratio);
+  size_upper = Math.floor(+get_size_upper.value / pixel_ratio);
 
   const absolute_width = canvas.width / (size_upper - size_lower + index_zero);
   var image_size = ((absolute_width) * (old_size - size_lower + index_zero))
   ctx.drawImage(resizing_img, 0, 0, image_size, image_size);
-  
-  
   
   matrix_squares.change_size(size_lower, size_upper, old_size, 'higher');
   update_images(canvas)
@@ -78,7 +74,7 @@ get_upscale_button.addEventListener("click", function () {
 
 //-----------------------Canvas-----------------------------
 
-let canvas = document.getElementById("canvas");
+let canvas = document.querySelector("#canvas");
 const ctx = canvas.getContext("2d", { alpha: false });
 
 //Check class for these settings!
