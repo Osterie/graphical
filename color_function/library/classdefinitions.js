@@ -13,7 +13,7 @@ class Square {
   draw() {
     switch (true) {
       case isFinite(this.hue):
-        this.color = `hsl( ${this.hue} , ${this.saturation}% , ${this.lightness}%)`;
+        this.color = `hsl( ${this.hue}, ${this.saturation}%, ${this.lightness}%)`;
         this.ctx.fillStyle = this.color;
         this.ctx.fillRect(this.xpos, this.ypos, this.square_size, this.square_size);
         break;
@@ -27,15 +27,16 @@ class Square {
   }
 
   hue_changed(expression, x, y) {
-    this.hue = Function( `return ${expression.replace(/X/g, x).replace(/Y/g, y)}` )();
+
+    this.hue =  math.evaluate(expression.replace(/X/g, x).replace(/Y/g, y));
     this.draw();
   }
   saturation_changed(expression, x, y) {
-    this.saturation = Math.abs( ((100 + Function(`return ${expression.replace(/X/g, x).replace(/Y/g, y)}`)()) % 200) - 100 );
+    this.saturation = Math.abs( ((100 +  math.evaluate(expression.replace(/X/g, x).replace(/Y/g, y))) % 200) - 100 );
     this.draw();
   }
   lightness_changed(expression, x, y) {
-    this.lightness = Math.abs( ((100 + Function(`return ${expression.replace(/X/g, x).replace(/Y/g, y)}`)()) % 200) - 100 );
+    this.lightness = Math.abs( ((100 + math.evaluate(expression.replace(/X/g, x).replace(/Y/g, y))) % 200) - 100 );
     this.draw();
   }
 }
