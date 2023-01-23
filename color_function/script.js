@@ -13,21 +13,21 @@ const get_upscale_button = document.getElementById("upscale");
 
 get_hue_expression.addEventListener("change", function () {
   hue_expression = get_hue_expression.value;
-  matrix_squares.hue_expression = hue_expression
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
   matrix_squares.class_method_loop("hue", hue_expression);
   update_images(canvas)
 });
 
 get_saturation_expression.addEventListener("change", function () {
   saturation_expression = get_saturation_expression.value;
-  matrix_squares.saturation_expression = saturation_expression
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
   matrix_squares.class_method_loop("saturation", saturation_expression);
   update_images(canvas)
 });
 
 get_lightness_expression.addEventListener("change", function () {
   lightness_expression = get_lightness_expression.value;
-  matrix_squares.lightness_expression = lightness_expression
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
   matrix_squares.class_method_loop("lightness", lightness_expression);
   update_images(canvas)
 });
@@ -67,10 +67,6 @@ get_size_upper.addEventListener("change", function () {
   let old_size = size_upper
   size_upper = ~~(+get_size_upper.value / pixel_ratio);
 
-
-  
-  // this.size_lower = size_lower
-  // this.size_upper = size_upper
   absolute_width = canvas.width / (size_upper - size_lower + index_zero);
 
   var image_size = ~~((absolute_width) * (old_size+1 - size_lower))
@@ -110,7 +106,7 @@ let hue_expression = get_hue_expression.value;
 let saturation_expression = get_saturation_expression.value;
 let lightness_expression = get_lightness_expression.value;
 
-//-------------------------------GUIDING BOX FOR RESIZE--------------------
+//-------------------------------ZOOMING--------------------
 
 let initial_cursor_position = []
 let current_cursor_position = []
@@ -184,7 +180,6 @@ function winInit() {
   absolute_width = (canvas.width / size ); //width in px of every "pixel" drawn on canvas
   matrix_squares = new Square_matrix(canvas, hue_expression, saturation_expression, lightness_expression)
   matrix_squares.create_squares(size_lower, size_lower, size_upper, size_upper, absolute_width, pixel_ratio)
-  
   update_images(canvas)
 }
 

@@ -1,11 +1,12 @@
 class Square {
-  constructor(xpos, ypos, hue, saturation, lightness, square_size) {
+  constructor(ctx, xpos, ypos, hue, saturation, lightness, square_size) {
     this.xpos = xpos;
     this.ypos = ypos;
     this.hue = hue;
     this.saturation = saturation;
     this.lightness = lightness;
     this.square_size = square_size
+    this.ctx = ctx
     this.draw();
   }
 
@@ -17,14 +18,14 @@ class Square {
             ${this.saturation}% ,
             ${this.lightness}%)`;
             
-        ctx.fillStyle = this.color;
-        ctx.fillRect(this.xpos, this.ypos, this.square_size, this.square_size) ;
+        this.ctx.fillStyle = this.color;
+        this.ctx.fillRect(this.xpos, this.ypos, this.square_size, this.square_size) ;
         break;
 
       default:
         this.color = `hsl(0, 0%, 0%)`;
-        ctx.fillStyle = this.color;
-        ctx.fillRect(this.xpos, this.ypos, this.square_size, this.square_size) ;
+        this.ctx.fillStyle = this.color;
+        this.ctx.fillRect(this.xpos, this.ypos, this.square_size, this.square_size) ;
         break;
     }
   }
@@ -87,6 +88,7 @@ class Square_matrix {
         this.lightness = Math.abs( ((100 + Function( `return + ${this.lightness_expression.replace(/X/g, color_x).replace(/Y/g, color_y)}` )()) % 200) - 100)
 
         this.square_matrix[x][y] = new Square(
+          this.ctx,
           ((x - start_x) * this.absolute_width),
           ((y - start_x) * this.absolute_width),
           this.hue,
@@ -116,6 +118,7 @@ class Square_matrix {
         this.lightness = Math.abs( ((100 + Function( `return + ${this.lightness_expression.replace(/X/g, color_x).replace(/Y/g, color_y)}` )()) % 200) - 100)
         
         this.square_matrix[x][y] = new Square(
+          this.ctx,
           ((x - start_x) * this.absolute_width),
           ((y - start_x) * this.absolute_width),
           this.hue,
@@ -128,7 +131,6 @@ class Square_matrix {
   }
   //TODO arguments should be same for new/draw_pixels
     draw_squares(start_x, end_x, start_y, end_y, absolute_width){
-      this.ctx.clearRect(0, 0, canvas.width, canvas.height)
 
       for (let x = start_x, runs = end_x; x <= runs; x++) {
         for (let y = start_y, runs = end_y; y <= runs; y++) {
@@ -143,23 +145,30 @@ class Square_matrix {
     class_method_loop(method, component) {
   
       if (method === "hue") {
-        var component_expression = component
+        this.hue_expression = component
+
         var class_method = Square.prototype.hue_changed;
       }
     
       else if (method === "saturation") {
-        var component_expression = component
+        this.saturation_expression = component
+
         var class_method = Square.prototype.saturation_changed;
       }
     
       else if (method === "lightness") {
-        var component_expression = component
+        this.lightness = component
         var class_method = Square.prototype.lightness_changed;
       }
-    
+
+      c(this.size_lower, this.size_upper)
+
       for (let x = this.size_lower; x <= this.size_upper; x++) {
         for (let y = this.size_lower; y <= this.size_upper; y++) {
-          class_method.call(this.square_matrix[x][y], component_expression, x*pixel_ratio, y*pixel_ratio);
+          this.square_matrix[x][y].square_size = this.absolute_width
+          this.square_matrix[x][y].xpos = (x - this.size_lower) * this.absolute_width
+          this.square_matrix[x][y].ypos = (y - this.size_lower) * this.absolute_width
+          class_method.call(this.square_matrix[x][y], component, x*this.pixel_ratio, y*this.pixel_ratio);
         }
       }
     }
@@ -200,12 +209,10 @@ class Square_matrix {
     const canvas_current_x = cursor_start_x + zoom_area.width;
     const canvas_current_y = cursor_start_y + zoom_area.height;
 
-    //Draws the guiding box if it fits the canvas
-
     const canvas_start_x = 0
     const canvas_start_y = 0
 
-     
+    //zooms if a perfect square is makeable, guiding box fits the canvas
     if ( (canvas_start_x < canvas_current_x && canvas_current_x < this.canvas.width) && (canvas_start_y < canvas_current_y && canvas_current_y < this.canvas.height) ){
 
       //start is the smallest value, while end is the largest, opposite for y value because it is distance from top of canvas
@@ -222,5 +229,4 @@ class Square_matrix {
       this.draw_squares(start_x, end_x, start_y, end_y, this.absolute_width)
     }
   }
-  
 }
