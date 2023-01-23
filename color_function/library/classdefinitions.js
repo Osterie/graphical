@@ -2,10 +2,6 @@
 
 //5 It might be more efficient to use a single method to handle the hue, saturation, and lightness calculations, instead of having separate methods for each in the Square class.
 
-//6 The class Square_matrix is using the Math.abs function to keep the saturation and lightness values between 0 and 100. An alternative approach would be to use the modulo operator % to ensure that the value is within the desired range, which would be more efficient.
-
-//7 The class Square_matrix is using the replace method to replace X and Y in the expressions, it could use a more powerful and efficient way like using a template string to replace the X and Y values.
-
 
 class Square {
   constructor(ctx, xpos, ypos, hue, saturation, lightness, square_size) {
