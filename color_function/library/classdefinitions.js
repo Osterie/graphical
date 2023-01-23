@@ -1,3 +1,14 @@
+//IMPROVEMENT AREAS
+
+//4 The Square_matrix class has a property called index_zero which is set to 1, it is not used within the code, it could be removed.
+
+//5 It might be more efficient to use a single method to handle the hue, saturation, and lightness calculations, instead of having separate methods for each in the Square class.
+
+//6 The class Square_matrix is using the Math.abs function to keep the saturation and lightness values between 0 and 100. An alternative approach would be to use the modulo operator % to ensure that the value is within the desired range, which would be more efficient.
+
+//7 The class Square_matrix is using the replace method to replace X and Y in the expressions, it could use a more powerful and efficient way like using a template string to replace the X and Y values.
+
+
 class Square {
   constructor(ctx, xpos, ypos, hue, saturation, lightness, square_size) {
     this.xpos = xpos;
@@ -7,7 +18,7 @@ class Square {
     this.lightness = lightness;
     this.square_size = square_size;
     this.ctx = ctx;
-    this.draw();
+    // this.draw();
   }
 
   draw() {
@@ -81,19 +92,20 @@ class Square_matrix {
         let color_x = x * this.pixel_ratio;
         let color_y = y * this.pixel_ratio;
 
-        this.hue = Function( `return ${this.hue_expression .replace(/X/g, color_x) .replace(/Y/g, color_y)}` )();
-        this.saturation = Math.abs( ((100 + Function( `return + ${this.saturation_expression .replace(/X/g, color_x) .replace(/Y/g, color_y)}` )()) % 200) - 100 );
-        this.lightness = Math.abs( ((100 + Function( `return + ${this.lightness_expression .replace(/X/g, color_x) .replace(/Y/g, color_y)}` )()) % 200) - 100 );
-
+        const hue =  math.evaluate(this.hue_expression.replace(/X/g, color_x).replace(/Y/g, color_y));
+        const saturation = Math.abs( ((100 +  math.evaluate(this.saturation_expression.replace(/X/g, color_x).replace(/Y/g, color_y))) % 200) - 100 );
+        const lightness = Math.abs( ((100 + math.evaluate(this.lightness_expression.replace(/X/g, color_x).replace(/Y/g, color_y))) % 200) - 100 );
+    
         this.square_matrix[x][y] = new Square(
           this.ctx,
           (x - start_x) * this.absolute_width,
           (y - start_x) * this.absolute_width,
-          this.hue,
-          this.saturation,
-          this.lightness,
+          hue,
+          saturation,
+          lightness,
           this.absolute_width
         );
+        this.square_matrix[x][y].draw()
       }
     }
 
@@ -103,27 +115,24 @@ class Square_matrix {
 
     // row
     for (let x = start_y, runs = length; x <= runs; x++) {
-      if (this.square_matrix[x] == undefined) {
-        this.square_matrix[x] = [];
-      }
-
       for (let y = start_x, runs = width; y <= runs; y++) {
         let color_x = x * this.pixel_ratio;
         let color_y = y * this.pixel_ratio;
 
-        this.hue = Function( `return ${this.hue_expression .replace(/X/g, color_x) .replace(/Y/g, color_y)}` )();
-        this.saturation = Math.abs( ((100 + Function( `return + ${this.saturation_expression .replace(/X/g, color_x) .replace(/Y/g, color_y)}` )()) % 200) - 100 );
-        this.lightness = Math.abs( ((100 + Function( `return + ${this.lightness_expression .replace(/X/g, color_x) .replace(/Y/g, color_y)}` )()) % 200) - 100 );
-
+        const hue =  math.evaluate(this.hue_expression.replace(/X/g, color_x).replace(/Y/g, color_y));
+        const saturation = Math.abs( ((100 +  math.evaluate(this.saturation_expression.replace(/X/g, color_x).replace(/Y/g, color_y))) % 200) - 100 );
+        const lightness = Math.abs( ((100 + math.evaluate(this.lightness_expression.replace(/X/g, color_x).replace(/Y/g, color_y))) % 200) - 100 );
+    
         this.square_matrix[x][y] = new Square(
           this.ctx,
           (x - start_x) * this.absolute_width,
           (y - start_x) * this.absolute_width,
-          this.hue,
-          this.saturation,
-          this.lightness,
+          hue,
+          saturation,
+          lightness,
           this.absolute_width
         );
+        this.square_matrix[x][y].draw()
       }
     }
   }
@@ -209,7 +218,12 @@ class Square_matrix {
       const end_x = Math.max( ~~(cursor_start_x / this.absolute_width) + this.distance_left_x, ~~((cursor_start_x + zoom_area.width) / this.absolute_width) + this.distance_left_x );
 
       const start_y = Math.min( ~~(cursor_start_y / this.absolute_width) + this.distance_top_y, ~~((cursor_start_y + zoom_area.height) / this.absolute_width) + this.distance_top_y );
-      const end_y = Math.max( ~~(cursor_start_y / this.absolute_width) + this.distance_top_y, ~~((cursor_start_y + zoom_area.height) / this.absolute_width) + this.distance_top_y );
+      let end_y = Math.max( ~~(cursor_start_y / this.absolute_width) + this.distance_top_y, ~~((cursor_start_y + zoom_area.height) / this.absolute_width) + this.distance_top_y );
+
+      //results in better zooming...
+      if (end_y + 1 <= this.size_upper){
+        end_y += 1
+      }
 
       this.distance_left_x = start_x;
       this.distance_top_y = start_y;
