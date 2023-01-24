@@ -11,23 +11,23 @@ const get_pixel_ratio = document.querySelector("#pixel_ratio");
 const get_upscale_button = document.querySelector("#upscale");
 
 get_hue_expression.addEventListener("change", function () {
-  hue_expression = get_hue_expression.value;
+  // hue_expression = get_hue_expression.value;
   ctx.clearRect(0, 0, canvas.width, canvas.height)
-  matrix_squares.class_method_loop("hue", hue_expression);
+  matrix_squares.class_method_loop("hue", get_hue_expression.value);
   update_images(canvas)
 });
 
 get_saturation_expression.addEventListener("change", function () {
-  saturation_expression = get_saturation_expression.value;
+  // saturation_expression = get_saturation_expression.value;
   ctx.clearRect(0, 0, canvas.width, canvas.height)
-  matrix_squares.class_method_loop("saturation", saturation_expression);
+  matrix_squares.class_method_loop("saturation", get_saturation_expression.value);
   update_images(canvas)
 });
 
 get_lightness_expression.addEventListener("change", function () {
-  lightness_expression = get_lightness_expression.value;
+  // lightness_expression = get_lightness_expression.value;
   ctx.clearRect(0, 0, canvas.width, canvas.height)
-  matrix_squares.class_method_loop("lightness", lightness_expression);
+  matrix_squares.class_method_loop("lightness", get_lightness_expression.value);
   update_images(canvas)
 });
 
@@ -37,6 +37,7 @@ get_pixel_ratio.addEventListener("change", function () {
   size_lower = Math.floor(+get_size_lower.value / pixel_ratio);
   distance_left_x_zooming = size_lower
   distance_top_y_zooming = size_lower
+  
   matrix_squares.create_squares(size_lower, size_lower, size_upper, size_upper, pixel_ratio)
   update_images(canvas)
 });
@@ -48,9 +49,7 @@ get_size_lower.addEventListener("change", function () {
   var distance_from_top_left = (absolute_width) * (old_size - size_lower)
   var image_size = ((absolute_width) * (size_upper - old_size + index_zero ))
   ctx.drawImage(resizing_img, distance_from_top_left, distance_from_top_left, image_size, image_size);
-
-
-
+  
   matrix_squares.change_size(size_lower, size_upper, old_size, 'lower');
   update_images(canvas)
 });
@@ -83,23 +82,21 @@ const ctx = canvas.getContext("2d", { alpha: false });
 
 //----------------Creation of pixels--------------------------------
 
-const index_zero = 1
 let matrix_pixels = [];
 let size_lower = +get_size_lower.value;
 let size_upper = +get_size_upper.value;
-let size = size_upper - size_lower + index_zero;
-var pixel_ratio = parseFloat(get_pixel_ratio.value);
+var pixel_ratio= +(get_pixel_ratio.value);
+const index_zero = 1
 
-let hue_expression = get_hue_expression.value;
-let saturation_expression = get_saturation_expression.value;
-let lightness_expression = get_lightness_expression.value;
+// let hue_expression = get_hue_expression.value;
+// let saturation_expression = get_saturation_expression.value;
+// let lightness_expression = get_lightness_expression.value;
 
 //-------------------------------ZOOMING--------------------
 
 let initial_cursor_position = []
 let current_cursor_position = []
 let mouse_is_down = false
-
 
 // Event listener for all cursor on canvas events
 function handle_canvas_event_zoom(event) {
@@ -166,9 +163,10 @@ var distance_top_y_zooming = size_lower
 window.onload = winInit;
 function winInit() {
   // ctx.filter = "hue-rotate(200deg)" //INTERESTING!
-  matrix_squares = new Square_matrix(canvas, hue_expression, saturation_expression, lightness_expression)
+  matrix_squares = new Square_matrix(canvas, get_hue_expression.value, get_saturation_expression.value, get_lightness_expression.value)
   matrix_squares.create_squares(size_lower, size_lower, size_upper, size_upper, pixel_ratio)
   update_images(canvas)
+  
 }
 
 //\\\\\\\\\\\\\\\\\\\\FUNCTIONS\\\\\\\\\\\\\\\\\\\\\\\
@@ -197,20 +195,19 @@ function update_images(canvas){
 //     }
 //     runspeed = get_runspeed.value;
 //     animId = setInterval(draw_pixels, 1000 / runspeed);
-//TODO: the draw_pixels function must be made again if i want make a changing variable that changes every second or whatever
 //   }
 // }
 //------------------END--------------------
 
 //!HUGE? TODO: use webworkers, ask chat gpt-3 for help, not viable? passing information between webworker and main script removes class
 
-//TODO: Research complex plotting or whatever, make an option to change to using complex numbers?
+//TODO: !Research complex plotting or whatever, make an option to change to using complex numbers?
 
-//TODO: Create a settings button where settings can be changed/toggled?
-//TODO:! Add a button for the option to redraw the black background, creates very interesting patterns when the size of the pixels are < 1
-//TODO: Make an option to turn on the sawtooth pattern for hue too? and create lower and upper limit, this.hue =  Math.abs(( (100 + Function("return " + hue_expression)()) % 200) - 100)
+//TODO: create a settings button where settings can be changed/toggled?
+//TODO:! add a button for the option to redraw the black background, creates very interesting patterns when the size of the pixels are < 1
+//TODO: make an option to turn on the sawtooth pattern for hue too? and create lower and upper limit, this.hue =  Math.abs(( (100 + Function("return " + hue_expression)()) % 200) - 100)
 //!TODO: Create a option to toggle between clicking a button to run script and running script when a variable is changed.
-//!TODO: Performance mode and fast mode, ise ctx.drawimage method for fast and redraw every pixel every time for fast mode.
+//!TODO: quality mode and fast mode, ise ctx.drawimage method for fast and redraw every pixel every time for fast mode.
 //TODO: save settings in localstorage
 
 //TODO: Create option to make a variable that changes every second f.eks. goes from 1 to 10 then 10 to 1, call it n and then n can be used in the color chooser

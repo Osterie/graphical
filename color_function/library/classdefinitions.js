@@ -27,17 +27,15 @@ class Square {
   }
 
   hue_changed(expression, x, y) {
-
-    this.hue = math.evaluate(`${expression}`.replace(/X/g, x).replace(/Y/g, y));
+    this.hue = Function( `return ${expression.replace(/X/g, x).replace(/Y/g, y)}` )();
     this.draw();
   }
   saturation_changed(expression, x, y) {
-    this.saturation = Math.abs( ((100 +  math.evaluate(`${expression}`.replace(/X/g, x).replace(/Y/g, y))) % 200) - 100 );
-
+    this.saturation = Math.abs( ((100 + Function(`return ${expression.replace(/X/g, x).replace(/Y/g, y)}`)()) % 200) - 100 );
     this.draw();
   }
   lightness_changed(expression, x, y) {
-    this.lightness = Math.abs( ((100 + math.evaluate(`${expression}`.replace(/X/g, x).replace(/Y/g, y))) % 200) - 100 );
+    this.lightness = Math.abs( ((100 + Function(`return ${expression.replace(/X/g, x).replace(/Y/g, y)}`)()) % 200) - 100 );
     this.draw();
   }
 }
@@ -82,9 +80,9 @@ class Square_matrix {
         let color_x = x * this.pixel_ratio;
         let color_y = y * this.pixel_ratio;
 
-        const hue = math.evaluate(`${this.hue_expression}`.replace(/X/g, color_x).replace(/Y/g, color_y));
-        const saturation = Math.abs( ((100 +  math.evaluate(`${this.saturation_expression}`.replace(/X/g, color_x).replace(/Y/g, color_y))) % 200) - 100 );
-        const lightness = Math.abs( ((100 + math.evaluate(`${this.lightness_expression}`.replace(/X/g, color_x).replace(/Y/g, color_y))) % 200) - 100 );
+        const hue = Function( `return ${this.hue_expression .replace(/X/g, color_x) .replace(/Y/g, color_y)}` )();
+        const saturation = Math.abs( ((100 + Function( `return + ${this.saturation_expression .replace(/X/g, color_x) .replace(/Y/g, color_y)}` )()) % 200) - 100 );
+        const lightness = Math.abs( ((100 + Function( `return + ${this.lightness_expression .replace(/X/g, color_x) .replace(/Y/g, color_y)}` )()) % 200) - 100 );
 
         this.square_matrix[x][y] = new Square(
           this.ctx,
@@ -109,9 +107,9 @@ class Square_matrix {
         let color_x = x * this.pixel_ratio;
         let color_y = y * this.pixel_ratio;
 
-        const hue = math.evaluate(`${this.hue_expression}`.replace(/X/g, color_x).replace(/Y/g, color_y));
-        const saturation = Math.abs( ((100 +  math.evaluate(`${this.saturation_expression}`.replace(/X/g, color_x).replace(/Y/g, color_y))) % 200) - 100 );
-        const lightness = Math.abs( ((100 + math.evaluate(`${this.lightness_expression}`.replace(/X/g, color_x).replace(/Y/g, color_y))) % 200) - 100 );
+        const hue = Function( `return ${this.hue_expression .replace(/X/g, color_x) .replace(/Y/g, color_y)}` )();
+        const saturation = Math.abs( ((100 + Function( `return + ${this.saturation_expression .replace(/X/g, color_x) .replace(/Y/g, color_y)}` )()) % 200) - 100 );
+        const lightness = Math.abs( ((100 + Function( `return + ${this.lightness_expression .replace(/X/g, color_x) .replace(/Y/g, color_y)}` )()) % 200) - 100 );
 
         this.square_matrix[x][y] = new Square(
           this.ctx,
