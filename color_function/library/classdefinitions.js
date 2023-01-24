@@ -7,7 +7,6 @@ class Square {
     this.lightness = lightness;
     this.square_size = square_size;
     this.ctx = ctx;
-    // this.draw();
   }
 
   draw() {
@@ -77,8 +76,8 @@ class Square_matrix {
       }
 
       for (let y = start_y, runs = length; y <= runs; y++) {
-        let color_x = x * this.pixel_ratio;
-        let color_y = y * this.pixel_ratio;
+        const color_x = x * this.pixel_ratio;
+        const color_y = y * this.pixel_ratio;
 
         const hue = Function( `return ${this.hue_expression .replace(/X/g, color_x) .replace(/Y/g, color_y)}` )();
         const saturation = Math.abs( ((100 + Function( `return + ${this.saturation_expression .replace(/X/g, color_x) .replace(/Y/g, color_y)}` )()) % 200) - 100 );
@@ -104,8 +103,8 @@ class Square_matrix {
     // row
     for (let x = start_y, runs = length; x <= runs; x++) {
       for (let y = start_x, runs = width; y <= runs; y++) {
-        let color_x = x * this.pixel_ratio;
-        let color_y = y * this.pixel_ratio;
+        const color_x = x * this.pixel_ratio;
+        const color_y = y * this.pixel_ratio;
 
         const hue = Function( `return ${this.hue_expression .replace(/X/g, color_x) .replace(/Y/g, color_y)}` )();
         const saturation = Math.abs( ((100 + Function( `return + ${this.saturation_expression .replace(/X/g, color_x) .replace(/Y/g, color_y)}` )()) % 200) - 100 );
@@ -149,7 +148,7 @@ class Square_matrix {
     }
 
     else if (method === "lightness") {
-      this.lightness = component;
+      this.lightness_expression = component;
       var class_method = Square.prototype.lightness_changed;
     }
 
@@ -168,7 +167,7 @@ class Square_matrix {
     this.size_lower = size_lower;
     this.size_upper = size_upper;
 
-    //old_size_bipartite means its either the old size_lower or old size_upper
+    // old_size_bipartite means its either the old size_lower or old size_upper
     switch (true) {
 
       //size_upper changed
@@ -190,16 +189,14 @@ class Square_matrix {
   }
 
   zoom(cursor_start_x, cursor_end_x, cursor_start_y, cursor_end_y) {
+
     const zoom_area = largest_drawable_square( cursor_start_x, cursor_end_x, cursor_start_y, cursor_end_y );
 
     const canvas_current_x = cursor_start_x + zoom_area.width;
     const canvas_current_y = cursor_start_y + zoom_area.height;
 
-    const canvas_start_x = 0;
-    const canvas_start_y = 0;
-
     //zooms if a perfect square is makeable, guiding box fits the canvas
-    if ( canvas_start_x < canvas_current_x && canvas_current_x < this.canvas.width && canvas_start_y < canvas_current_y && canvas_current_y < this.canvas.height ) {
+    if ( 0 < canvas_current_x && canvas_current_x < this.canvas.width && 0 < canvas_current_y && canvas_current_y < this.canvas.height ) {
      
       //start is the smallest value, while end is the largest, opposite for y value because it is distance from top of canvas
       const start_x = Math.min( ~~(cursor_start_x / this.absolute_width) + this.distance_left_x, ~~((cursor_start_x + zoom_area.width) / this.absolute_width) + this.distance_left_x );
