@@ -20,9 +20,25 @@
 		<textarea id='saturation_expression' placeholder="Saturation" cols="40" rows="5">100</textarea>
 		<textarea id='lightness_expression' placeholder="Lightness" cols="40" rows="5">50</textarea>
 
-		<input id='pixel_ratio' type="text" placeholder="Pixel Ratio" value="1">
+		<input id='pixel_ratio' type="number" placeholder="Pixel Ratio" value="1" min="0.1" step="0.1">
 		<input id='size_lower' type='number' placeholder="Size Lower" value='-10'>
 		<input id='size_upper' type='number' placeholder="Size Upper" value='10' oninput="this.value = ~~(this.value);">
+		
+		<div id = "variable_container">
+
+			<!-- <input id = 'custom_variable_name' type="text" placeholder="Variable Name"> -->
+			<p> Please fill all fields!</p>
+			<p id = 'custom_variable_name'></p>
+			<p id = custom_variable_error_handler></p>
+			<input id = 'custom_variable_from' type="number" placeholder="From" value="1">
+			<input id = 'custom_variable_to' type="number" placeholder="To"> 
+			<input id = 'custom_variable_step' type="number" placeholder="Step" min="0"> 
+			<input id = 'custom_variable_frequency' type="number" placeholder="Frequency" max="5" min="0">
+			<button id = 'custom_variable_activate'> Activate Loop </button> 
+			<button id = 'custom_variable_stop'> Stop Loop </button> 
+
+		</div>
+
 		<button id='upscale'> upscale </button>
 		<!-- <input id = 'runspeed'type = 'number' placeholder="FPS (DONT USE YET)"> -->
 
