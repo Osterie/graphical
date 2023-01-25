@@ -18,7 +18,6 @@ get_hue_expression.addEventListener("change", function () {
 });
 
 get_saturation_expression.addEventListener("change", function () {
-  // saturation_expression = get_saturation_expression.value;
   ctx.clearRect(0, 0, canvas.width, canvas.height)
   matrix_squares.class_method_loop("saturation", get_saturation_expression.value);
   matrix_squares.draw_squares(size_lower, size_upper, size_lower, size_upper)
@@ -26,7 +25,6 @@ get_saturation_expression.addEventListener("change", function () {
 });
 
 get_lightness_expression.addEventListener("change", function () {
-  // lightness_expression = get_lightness_expression.value;
   ctx.clearRect(0, 0, canvas.width, canvas.height)
   matrix_squares.class_method_loop("lightness", get_lightness_expression.value);
   matrix_squares.draw_squares(size_lower, size_upper, size_lower, size_upper)
@@ -90,10 +88,6 @@ let size_upper = +get_size_upper.value;
 var pixel_ratio= +(get_pixel_ratio.value);
 const index_zero = 1
 
-// let hue_expression = get_hue_expression.value;
-// let saturation_expression = get_saturation_expression.value;
-// let lightness_expression = get_lightness_expression.value;
-
 //-------------------------------ZOOMING--------------------
 
 let initial_cursor_position = []
@@ -135,8 +129,8 @@ function handle_canvas_event_zoom(event) {
         resizing_img.src = canvas.toDataURL();
       }
 
-      initial_cursor_position = [];
-      current_cursor_position = [];
+      // initial_cursor_position = [];
+      // current_cursor_position = [];
       break;
       
     default:
@@ -179,48 +173,37 @@ function update_images(canvas){
   resizing_img.src = dataURL;
 }
 
-  
-  
-
-
+var interval_id
+const custom_variable_activate = document.getElementById('custom_variable_activate')
+const custom_variable_stop = document.getElementById('custom_variable_stop')
 const custom_variable_error_handler = document.getElementById('custom_variable_error_handler')
 
+custom_variable_stop.addEventListener('click', function () {clearInterval(interval_id)})
 custom_variable_activate.addEventListener('click', function() {
-  running = true; 
   custom_variable_handler(); 
   document.getElementById('custom_variable_name').innerHTML = 'Variable name: N';
 })
-custom_variable_stop.addEventListener('click', function () {clearInterval(intervalId)})
 
-var intervalId
-
-
-// clearInterval(intervalId) 
 
 function custom_variable_handler(){
-  const custom_variable_activate = document.getElementById('custom_variable_activate')
-  const custom_variable_stop = document.getElementById('custom_variable_stop')
+
   let custom_variable_start = parseInt(document.getElementById('custom_variable_from').value)
   const custom_variable_end = parseInt(document.getElementById('custom_variable_to').value)
   const custom_variable_step = parseInt(document.getElementById('custom_variable_step').value)
   const custom_variable_frequency = parseInt(document.getElementById('custom_variable_frequency').value)
-  clearInterval(intervalId)
+  clearInterval(interval_id)
 
 
   let direction = 1
   let custom_variable_value = custom_variable_start
 
-  intervalId = window.setInterval(function(){
-
+  interval_id = window.setInterval(function(){
 
     custom_variable_value += custom_variable_step * direction
-
-
 
     if (custom_variable_value > custom_variable_end || custom_variable_value <= custom_variable_start){
       direction *= -1
     }
-
 
     matrix_squares.custom_variable = custom_variable_value 
 
@@ -229,10 +212,8 @@ function custom_variable_handler(){
     matrix_squares.class_method_loop("lightness", get_lightness_expression.value);
     matrix_squares.draw_squares(size_lower, size_upper, size_lower, size_upper)
     update_images(canvas)
-    //do stuff here!
   }, 1000/custom_variable_frequency);
-  custom_variable_error_handler.innerHTML = 'Error: Fill In All Fields'
-
+  // custom_variable_error_handler.innerHTML = 'Error: Fill In All Fields'
 }
 
 //!HUGE? TODO: use webworkers, ask chat gpt-3 for help, not viable? passing information between webworker and main script removes class
