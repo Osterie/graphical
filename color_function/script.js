@@ -11,9 +11,9 @@ const get_pixel_ratio = document.querySelector("#pixel_ratio");
 const get_upscale_button = document.querySelector("#upscale");
 
 get_hue_expression.addEventListener("change", function () {
-  // hue_expression = get_hue_expression.value;
   ctx.clearRect(0, 0, canvas.width, canvas.height)
   matrix_squares.class_method_loop("hue", get_hue_expression.value);
+  matrix_squares.draw_squares(size_lower, size_upper, size_lower, size_upper)
   update_images(canvas)
 });
 
@@ -21,6 +21,7 @@ get_saturation_expression.addEventListener("change", function () {
   // saturation_expression = get_saturation_expression.value;
   ctx.clearRect(0, 0, canvas.width, canvas.height)
   matrix_squares.class_method_loop("saturation", get_saturation_expression.value);
+  matrix_squares.draw_squares(size_lower, size_upper, size_lower, size_upper)
   update_images(canvas)
 });
 
@@ -28,6 +29,7 @@ get_lightness_expression.addEventListener("change", function () {
   // lightness_expression = get_lightness_expression.value;
   ctx.clearRect(0, 0, canvas.width, canvas.height)
   matrix_squares.class_method_loop("lightness", get_lightness_expression.value);
+  matrix_squares.draw_squares(size_lower, size_upper, size_lower, size_upper)
   update_images(canvas)
 });
 
@@ -166,10 +168,9 @@ function winInit() {
   matrix_squares = new Square_matrix(canvas, get_hue_expression.value, get_saturation_expression.value, get_lightness_expression.value)
   matrix_squares.create_squares(size_lower, size_lower, size_upper, size_upper, pixel_ratio)
   update_images(canvas)
-  
 }
 
-//\\\\\\\\\\\\\\\\\\\\FUNCTIONS\\\\\\\\\\\\\\\\\\\\\\\
+//\\\\\\\\\\\\\\\\\\\\FUNCTIONS\\\\\\\\\\\\\\\\\\\\\\
 
 function update_images(canvas){
   //TODO: not really a general function...
@@ -178,26 +179,61 @@ function update_images(canvas){
   resizing_img.src = dataURL;
 }
 
+  
+  
 
-//------------------START--------------------
-//TO BE USED ANOTHER TIME?
-// var animId;
 
-// const get_runspeed = document.getElementById("runspeed");
-// get_runspeed.addEventListener("change", change_runspeed);
-// var runspeed = 1;
-// function change_runspeed() {
-//   if (get_runspeed.value == 0) {
-//     clearInterval(animId);
-//   } else {
-//     if (animId) {
-//       clearInterval(animId);
-//     }
-//     runspeed = get_runspeed.value;
-//     animId = setInterval(draw_pixels, 1000 / runspeed);
-//   }
-// }
-//------------------END--------------------
+const custom_variable_error_handler = document.getElementById('custom_variable_error_handler')
+
+custom_variable_activate.addEventListener('click', function() {
+  running = true; 
+  custom_variable_handler(); 
+  document.getElementById('custom_variable_name').innerHTML = 'Variable name: N';
+})
+custom_variable_stop.addEventListener('click', function () {clearInterval(intervalId)})
+
+var intervalId
+
+
+// clearInterval(intervalId) 
+
+function custom_variable_handler(){
+  const custom_variable_activate = document.getElementById('custom_variable_activate')
+  const custom_variable_stop = document.getElementById('custom_variable_stop')
+  let custom_variable_start = parseInt(document.getElementById('custom_variable_from').value)
+  const custom_variable_end = parseInt(document.getElementById('custom_variable_to').value)
+  const custom_variable_step = parseInt(document.getElementById('custom_variable_step').value)
+  const custom_variable_frequency = parseInt(document.getElementById('custom_variable_frequency').value)
+  clearInterval(intervalId)
+
+
+  let direction = 1
+  let custom_variable_value = custom_variable_start
+
+  intervalId = window.setInterval(function(){
+
+
+    custom_variable_value += custom_variable_step * direction
+
+
+
+    if (custom_variable_value > custom_variable_end || custom_variable_value <= custom_variable_start){
+      direction *= -1
+    }
+
+
+    matrix_squares.custom_variable = custom_variable_value 
+
+    matrix_squares.class_method_loop("hue", get_hue_expression.value);
+    matrix_squares.class_method_loop("saturation", get_saturation_expression.value);
+    matrix_squares.class_method_loop("lightness", get_lightness_expression.value);
+    matrix_squares.draw_squares(size_lower, size_upper, size_lower, size_upper)
+    update_images(canvas)
+    //do stuff here!
+  }, 1000/custom_variable_frequency);
+  custom_variable_error_handler.innerHTML = 'Error: Fill In All Fields'
+
+}
 
 //!HUGE? TODO: use webworkers, ask chat gpt-3 for help, not viable? passing information between webworker and main script removes class
 
