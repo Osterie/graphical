@@ -129,8 +129,8 @@ function handle_canvas_event_zoom(event) {
         resizing_img.src = canvas.toDataURL();
       }
 
-      // initial_cursor_position = [];
-      // current_cursor_position = [];
+      initial_cursor_position = [];
+      current_cursor_position = [];
       break;
       
     default:
@@ -227,7 +227,6 @@ function custom_variable_handler(){
 //!TODO: quality mode and fast mode, ise ctx.drawimage method for fast and redraw every pixel every time for fast mode.
 //TODO: save settings in localstorage
 
-//TODO: Create option to make a variable that changes every second f.eks. goes from 1 to 10 then 10 to 1, call it n and then n can be used in the color chooser
 
 //TODO: when changing size, the direction of which the new image is drawn in is wrong..
 //TODO: Add more color models, i.e rgb and such
@@ -250,3 +249,4 @@ function custom_variable_handler(){
 //* make it possible to zoom in on inzoomed image.
 //* made zooming more general
 //* made functions into methods
+//* created option to make a variable that changes every second f.eks. goes from 1 to 10 then 10 to 1, call it n and then n can be used in the color chooser
