@@ -11,21 +11,27 @@
 
 <body>
 
+	<!-- Remove center! -->
 	<center>
 		<p> Write an expression with X and Y(only capitalized letters) (Can use Math.sin(X)*100 and such)</p>
 		<p> Zoom using mouse and drag, hold ctrl and click to unzoom</p>
 
 		<!-- <button id='reset'> Reset Configs(NA)</button> -->
-		<textarea id='hue_expression' placeholder="Hue" cols="40" rows="5">X*Y</textarea>
-		<textarea id='saturation_expression' placeholder="Saturation" cols="40" rows="5">100</textarea>
-		<textarea id='lightness_expression' placeholder="Lightness" cols="40" rows="5">50</textarea>
-
-		<input id='pixel_ratio' type="number" placeholder="Pixel Ratio" value="1" min="0.1" step="0.1">
-		<input id='size_lower' type='number' placeholder="Size Lower" value='-10'>
-		<input id='size_upper' type='number' placeholder="Size Upper" value='10' oninput="this.value = ~~(this.value);">
+		<div id ='color_components'>
+			<h1> Write expressions for Hue, Saturation and Lightness!</h1>
+			<textarea id='hue_expression' placeholder="Hue" cols="40" rows="5">X*Y</textarea>
+			<textarea id='saturation_expression' placeholder="Saturation" cols="40" rows="5">100</textarea>
+			<textarea id='lightness_expression' placeholder="Lightness" cols="40" rows="5">50</textarea>
+		</div>
 		
-		<div id = "variable_container">
+		<div id ='size_manipulation'> 
+			<h1> Change the size of each pixel, lower size or upper size </h1>
+			<input id='size_lower' type='number' placeholder="Size Lower" value='-10'>
+			<input id='size_upper' type='number' placeholder="Size Upper" value='10' oninput="this.value = ~~(this.value);">
+			<input id='pixel_ratio' type="number" placeholder="Pixel Ratio" value="1" min="0.1" step="0.1">
+		</div>
 
+		<div id = "variable_container">
 			<!-- <input id = 'custom_variable_name' type="text" placeholder="Variable Name"> -->
 			<p> Please fill all fields!</p>
 			<p id = 'custom_variable_name'></p>
@@ -36,7 +42,6 @@
 			<input id = 'custom_variable_frequency' type="number" placeholder="Frequency" max="5" min="0">
 			<button id = 'custom_variable_activate'> Activate Loop </button> 
 			<button id = 'custom_variable_stop'> Stop Loop </button> 
-
 		</div>
 
 		<button id='upscale'> upscale </button>
