@@ -187,10 +187,10 @@ custom_variable_activate.addEventListener('click', function() {
 
 function custom_variable_handler(){
 
-  let custom_variable_start = parseInt(document.getElementById('custom_variable_from').value)
-  const custom_variable_end = parseInt(document.getElementById('custom_variable_to').value)
-  const custom_variable_step = parseInt(document.getElementById('custom_variable_step').value)
-  const custom_variable_frequency = parseInt(document.getElementById('custom_variable_frequency').value)
+  let custom_variable_start = parseFloat(document.getElementById('custom_variable_from').value)
+  const custom_variable_end = parseFloat(document.getElementById('custom_variable_to').value)
+  const custom_variable_step = parseFloat(document.getElementById('custom_variable_step').value)
+  const custom_variable_frequency = parseFloat(document.getElementById('custom_variable_frequency').value)
   clearInterval(interval_id)
 
 
@@ -207,9 +207,15 @@ function custom_variable_handler(){
 
     matrix_squares.custom_variable = custom_variable_value 
 
-    matrix_squares.class_method_loop("hue", get_hue_expression.value);
-    matrix_squares.class_method_loop("saturation", get_saturation_expression.value);
-    matrix_squares.class_method_loop("lightness", get_lightness_expression.value);
+    if (get_hue_expression.value.includes('N')){
+      matrix_squares.class_method_loop("hue", get_hue_expression.value);
+    }
+    if (get_saturation_expression.value.includes('N')){
+      matrix_squares.class_method_loop("saturation", get_saturation_expression.value);
+    }
+    if (get_lightness_expression.value.includes('N')){
+      matrix_squares.class_method_loop("lightness", get_lightness_expression.value);
+    }
     matrix_squares.draw_squares(size_lower, size_upper, size_lower, size_upper)
     update_images(canvas)
   }, 1000/custom_variable_frequency);
