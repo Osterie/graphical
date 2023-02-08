@@ -2,8 +2,8 @@ body {
 	background-color: #222831;
 	color: #FFFFFF;
 }
-h1,h2{
-	color: blue;
+h1,h2, h4{
+	color: white;
 }
 
 div
@@ -21,14 +21,6 @@ div
 	border-radius: 5px;
 }
 
-#canvas :last-child
-{
-	
-	position: absolute;
-	top: 200px;
-	left: 200px;
-
-}
 #meldinger {
 	border: solid 2px orange;
 	border-radius: 5px;
@@ -56,7 +48,6 @@ button:hover
 	transform: scale(0.8);
 	background-color: red;
 }
-
 
 input {
 	width: 300px;
@@ -86,4 +77,25 @@ textarea {
 textarea:focus {
 	border: 2px solid #555;
 	background-color: #fff;
+}
+
+#informative_title{
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: row;
+}
+
+#container_all_content{
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: row;
+}
+
+#container_paramaters{
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
 }

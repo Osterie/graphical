@@ -1,6 +1,9 @@
-//---------------------Accessing DOM elements------------------------
+//-----------------------Canvas-----------------------------
 
-const c =  console.log.bind(console);
+let canvas = document.querySelector("#canvas");
+const ctx = canvas.getContext("2d", { alpha: false });
+
+//---------------------Accessing DOM elements------------------------
 
 const get_hue_expression = document.querySelector("#hue_expression");
 const get_saturation_expression = document.querySelector("#saturation_expression");
@@ -9,90 +12,119 @@ const get_size_lower = document.querySelector("#size_lower");
 const get_size_upper = document.querySelector("#size_upper");
 const get_pixel_ratio = document.querySelector("#pixel_ratio");
 const get_upscale_button = document.querySelector("#upscale");
+const custom_variable_activate = document.getElementById('custom_variable_activate')
+const custom_variable_stop = document.getElementById('custom_variable_stop')
+const custom_variable_error_handler = document.getElementById('custom_variable_error_handler')
+
+canvas.addEventListener("mousedown", handle_canvas_event_zoom);
+canvas.addEventListener("mousemove", handle_canvas_event_zoom);
+canvas.addEventListener("mouseup", handle_canvas_event_zoom);
+canvas.addEventListener("mouseout", handle_canvas_event_zoom);
 
 get_hue_expression.addEventListener("change", function () {
   ctx.clearRect(0, 0, canvas.width, canvas.height)
   matrix_squares.class_method_loop("hue", get_hue_expression.value);
   matrix_squares.draw_squares(size_lower, size_upper, size_lower, size_upper)
-  update_images(canvas)
+  update_image(canvas, original_img)
+  update_image(canvas, resizing_img)
 });
 
 get_saturation_expression.addEventListener("change", function () {
   ctx.clearRect(0, 0, canvas.width, canvas.height)
   matrix_squares.class_method_loop("saturation", get_saturation_expression.value);
   matrix_squares.draw_squares(size_lower, size_upper, size_lower, size_upper)
-  update_images(canvas)
+  update_image(canvas, original_img)
+  update_image(canvas, resizing_img)
 });
 
 get_lightness_expression.addEventListener("change", function () {
   ctx.clearRect(0, 0, canvas.width, canvas.height)
   matrix_squares.class_method_loop("lightness", get_lightness_expression.value);
   matrix_squares.draw_squares(size_lower, size_upper, size_lower, size_upper)
-  update_images(canvas)
+  update_image(canvas, original_img)
+  update_image(canvas, resizing_img)
 });
 
 get_pixel_ratio.addEventListener("change", function () {
   pixel_ratio = +get_pixel_ratio.value;
   size_upper = Math.floor(+get_size_upper.value / pixel_ratio);
   size_lower = Math.floor(+get_size_lower.value / pixel_ratio);
-  distance_left_x_zooming = size_lower
-  distance_top_y_zooming = size_lower
   
   matrix_squares.create_squares(size_lower, size_lower, size_upper, size_upper, pixel_ratio)
-  update_images(canvas)
+  update_image(canvas, original_img)
+  update_image(canvas, resizing_img)
 });
 
 get_size_lower.addEventListener("change", function () {
-  let old_size = size_lower
+  const old_size = size_lower
   size_lower = Math.floor(+get_size_lower.value / pixel_ratio);
   const absolute_width = canvas.width / (size_upper - size_lower + index_zero);
-  var distance_from_top_left = (absolute_width) * (old_size - size_lower)
-  var image_size = ((absolute_width) * (size_upper - old_size + index_zero ))
+  const distance_from_top_left = (absolute_width) * (old_size - size_lower)
+  const image_size = ((absolute_width) * (size_upper - old_size + index_zero ))
   ctx.drawImage(resizing_img, distance_from_top_left, distance_from_top_left, image_size, image_size);
   
   matrix_squares.change_size(size_lower, size_upper, old_size, 'lower');
-  update_images(canvas)
+  update_image(canvas, original_img)
+  update_image(canvas, resizing_img)
 });
 
 get_size_upper.addEventListener("change", function () {
-  let old_size = size_upper
+  const old_size = size_upper
   size_upper = Math.floor(+get_size_upper.value / pixel_ratio);
 
   const absolute_width = canvas.width / (size_upper - size_lower + index_zero);
-  var image_size = ((absolute_width) * (old_size - size_lower + index_zero))
+  const image_size = ((absolute_width) * (old_size - size_lower + index_zero))
   ctx.drawImage(resizing_img, 0, 0, image_size, image_size);
   
   matrix_squares.change_size(size_lower, size_upper, old_size, 'higher');
-  update_images(canvas)
+  update_image(canvas, original_img)
+  update_image(canvas, resizing_img)
 });
 
 get_upscale_button.addEventListener("click", function () {
   matrix_squares.draw_squares(size_lower, size_upper, size_lower, size_upper)
-  update_images(canvas)
+  update_image(canvas, original_img)
+  update_image(canvas, resizing_img)
 });
 
-//-----------------------Canvas-----------------------------
+custom_variable_activate.addEventListener('click', function() {
+  custom_variable_handler(); 
+  document.getElementById('custom_variable_name').innerHTML = 'Variable name: N';
+})
 
-let canvas = document.querySelector("#canvas");
-const ctx = canvas.getContext("2d", { alpha: false });
+custom_variable_stop.addEventListener('click', function () {clearInterval(custom_variable_interval_id)})
 
-//Check class for these settings!
-// ctx.imageSmoothingEnabled = false;
-// ctx.imageSmoothingQuality = "high"
 
-//----------------Creation of pixels--------------------------------
+//----------------General----------------------------------
 
-let matrix_pixels = [];
+const index_zero = 1
+let custom_variable_interval_id
+
+//----------------Creation of pixels------------------------
+
 let size_lower = +get_size_lower.value;
 let size_upper = +get_size_upper.value;
-var pixel_ratio= +(get_pixel_ratio.value);
-const index_zero = 1
+let pixel_ratio= +(get_pixel_ratio.value);
 
 //-------------------------------ZOOMING--------------------
 
 let initial_cursor_position = []
 let current_cursor_position = []
 let mouse_is_down = false
+
+let original_img = new Image(); //how the image looks when all pixels are drawn at once at their "intended" size
+let resizing_img = new Image(); //image used for resizing
+
+//------------------------INITIALIZATION------------------------
+
+window.onload = winInit;
+function winInit() {
+  // ctx.filter = "hue-rotate(200deg)" //INTERESTING!
+  matrix_squares = new Square_matrix(canvas, get_hue_expression.value, get_saturation_expression.value, get_lightness_expression.value)
+  matrix_squares.create_squares(size_lower, size_lower, size_upper, size_upper, pixel_ratio)
+  update_image(canvas, original_img)
+  update_image(canvas, resizing_img)
+}
 
 // Event listener for all cursor on canvas events
 function handle_canvas_event_zoom(event) {
@@ -138,66 +170,25 @@ function handle_canvas_event_zoom(event) {
   }
 }
 
-canvas.addEventListener("mousedown", handle_canvas_event_zoom);
-canvas.addEventListener("mousemove", handle_canvas_event_zoom);
-canvas.addEventListener("mouseup", handle_canvas_event_zoom);
-canvas.addEventListener("mouseout", handle_canvas_event_zoom);
 
-let dataURL;
-let original_img = new Image(); //how the image looks when all pixels are drawn at once at their "intended" size
-let resizing_img = new Image(); //image used for resizing
 
-let clicked_released_xpos = [];
-let clicked_released_ypos = [];
 
-//when zooming, is used to tell how far from top left the squares that are going to be drawn are
-var distance_left_x_zooming = size_lower
-var distance_top_y_zooming = size_lower
 
-//------------------------INITIALIZATION------------------------
-
-window.onload = winInit;
-function winInit() {
-  // ctx.filter = "hue-rotate(200deg)" //INTERESTING!
-  matrix_squares = new Square_matrix(canvas, get_hue_expression.value, get_saturation_expression.value, get_lightness_expression.value)
-  matrix_squares.create_squares(size_lower, size_lower, size_upper, size_upper, pixel_ratio)
-  update_images(canvas)
-}
-
-//\\\\\\\\\\\\\\\\\\\\FUNCTIONS\\\\\\\\\\\\\\\\\\\\\\
-
-function update_images(canvas){
-  //TODO: not really a general function...
-  dataURL = canvas.toDataURL();
-  original_img.src = dataURL;
-  resizing_img.src = dataURL;
-}
-
-var interval_id
-const custom_variable_activate = document.getElementById('custom_variable_activate')
-const custom_variable_stop = document.getElementById('custom_variable_stop')
-const custom_variable_error_handler = document.getElementById('custom_variable_error_handler')
-
-custom_variable_stop.addEventListener('click', function () {clearInterval(interval_id)})
-custom_variable_activate.addEventListener('click', function() {
-  custom_variable_handler(); 
-  document.getElementById('custom_variable_name').innerHTML = 'Variable name: N';
-})
 
 
 function custom_variable_handler(){
 
-  let custom_variable_start = parseFloat(document.getElementById('custom_variable_from').value)
+  const custom_variable_start = parseFloat(document.getElementById('custom_variable_from').value)
   const custom_variable_end = parseFloat(document.getElementById('custom_variable_to').value)
   const custom_variable_step = parseFloat(document.getElementById('custom_variable_step').value)
   const custom_variable_frequency = parseFloat(document.getElementById('custom_variable_frequency').value)
-  clearInterval(interval_id)
+  clearInterval(custom_variable_interval_id)
 
-
+  //1 means positive direction, -1 negative
   let direction = 1
-  let custom_variable_value = custom_variable_start
+  const custom_variable_value = custom_variable_start
 
-  interval_id = window.setInterval(function(){
+  custom_variable_interval_id = window.setInterval(function(){
 
     custom_variable_value += custom_variable_step * direction
 
@@ -217,13 +208,12 @@ function custom_variable_handler(){
       matrix_squares.class_method_loop("lightness", get_lightness_expression.value);
     }
     matrix_squares.draw_squares(size_lower, size_upper, size_lower, size_upper)
-    update_images(canvas)
+    update_image(canvas, original_img)
+    update_image(canvas, resizing_img)
   }, 1000/custom_variable_frequency);
-  // custom_variable_error_handler.innerHTML = 'Error: Fill In All Fields'
 }
 
 //!HUGE? TODO: use webworkers, ask chat gpt-3 for help, not viable? passing information between webworker and main script removes class
-
 //TODO: !Research complex plotting or whatever, make an option to change to using complex numbers?
 
 //TODO: create a settings button where settings can be changed/toggled?

@@ -11,54 +11,62 @@
 
 <body>
 
-	<!-- Remove center! -->
-	<center>
-		<p> Write an expression with X and Y(only capitalized letters) (Can use Math.sin(X)*100 and such)</p>
-		<p> Zoom using mouse and drag, hold ctrl and click to unzoom</p>
+	<div id = "informative_title">
+		<p> Write an expression with X and Y(only capitalized letters) (Can use Math.sin(X)*100 and such).  Zoom using mouse and drag, hold ctrl and click to unzoom</p>
+	</div>
+    
+	<div id = "container_all_content">
 
-		<!-- <button id='reset'> Reset Configs(NA)</button> -->
-		<div id ='color_components'>
-			<h1> Write expressions for Hue, Saturation and Lightness!</h1>
-			<textarea id='hue_expression' placeholder="Hue" cols="40" rows="5">X*Y</textarea>
-			<textarea id='saturation_expression' placeholder="Saturation" cols="40" rows="5">100</textarea>
-			<textarea id='lightness_expression' placeholder="Lightness" cols="40" rows="5">50</textarea>
+		<div id = "container_paramaters">
+
+			<div id ='color_components' class = "paramater_container">
+
+				<h4> Write expressions for Hue, Saturation and Lightness!</h4>
+				<input id='hue_expression' placeholder="Hue" cols="40" rows="5" value="X*Y">
+				<input id='saturation_expression' placeholder="Saturation" cols="40" rows="5" value="75">
+				<input id='lightness_expression' placeholder="Lightness" cols="40" rows="5" value="50">
+			
+			</div>
+			
+			<div id ='size_manipulation' class = "paramater_container"> 
+			
+				<h4> Change the size of each pixel, lower size or upper size </h4>
+				<input id='size_lower' type='number' placeholder="Size Lower" value='-10'>
+				<input id='size_upper' type='number' placeholder="Size Upper" value='10' oninput="this.value = ~~(this.value);">
+				<input id='pixel_ratio' type="number" placeholder="Pixel Ratio" value="1" min="0.1" step="0.1">
+			
+			</div>
+
+			<div id = "variable_container" class = "paramater_container">
+			
+				<p> Please fill all fields!</p>
+				<p id = 'custom_variable_name'></p>
+				<p id = custom_variable_error_handler></p>
+				<input id = 'custom_variable_from' type="number" placeholder="From" value="1">
+				<input id = 'custom_variable_to' type="number" placeholder="To"> 
+				<input id = 'custom_variable_step' type="number" placeholder="Step" min="0"> 
+				<input id = 'custom_variable_frequency' type="number" placeholder="Frequency" max="5" min="0">
+				<button id = 'custom_variable_activate'> Activate Loop </button> 
+				<button id = 'custom_variable_stop'> Stop Loop </button> 
+			
+			</div>
+
+			<button id='upscale'> upscale </button>
+
 		</div>
+
+		<div id = "container_canvas">
+
+			<canvas id="canvas" width="600px" height="600px"> </canvas> <br>
 		
-		<div id ='size_manipulation'> 
-			<h1> Change the size of each pixel, lower size or upper size </h1>
-			<input id='size_lower' type='number' placeholder="Size Lower" value='-10'>
-			<input id='size_upper' type='number' placeholder="Size Upper" value='10' oninput="this.value = ~~(this.value);">
-			<input id='pixel_ratio' type="number" placeholder="Pixel Ratio" value="1" min="0.1" step="0.1">
 		</div>
 
-		<div id = "variable_container">
-			<!-- <input id = 'custom_variable_name' type="text" placeholder="Variable Name"> -->
-			<p> Please fill all fields!</p>
-			<p id = 'custom_variable_name'></p>
-			<p id = custom_variable_error_handler></p>
-			<input id = 'custom_variable_from' type="number" placeholder="From" value="1">
-			<input id = 'custom_variable_to' type="number" placeholder="To"> 
-			<input id = 'custom_variable_step' type="number" placeholder="Step" min="0"> 
-			<input id = 'custom_variable_frequency' type="number" placeholder="Frequency" max="5" min="0">
-			<button id = 'custom_variable_activate'> Activate Loop </button> 
-			<button id = 'custom_variable_stop'> Stop Loop </button> 
-		</div>
+	</div>
 
-		<button id='upscale'> upscale </button>
-		<!-- <input id = 'runspeed'type = 'number' placeholder="FPS (DONT USE YET)"> -->
-
-		<br>
-		<canvas id="canvas" width="600px" height="600px"> </canvas> <br>
-	</center>
-
-
-	<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.3.0/math.min.js"></script> -->
-
-	<script src="./library/functions.js"></script> <!-- Can convert vectors to angles (degress or radians) -->
-	<script src="./library/mathjs/node_modules/mathjs/lib/browser/math.js"></script>
+	<script src="./library/functions.js"></script>
 	<script src="./library/classdefinitions.js"></script>
-	<!-- <script src="worker.js"></script> -->
 	<script src="script.js"> </script>
+
 </body>
 
 </html>
