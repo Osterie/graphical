@@ -49,18 +49,16 @@ class Square_matrix {
     this.lightness_expression = lightness.trim();
     this.custom_variable
 
-
     this.pixel_ratio;
     this.size_lower;
     this.distance_left_x;
     this.distance_top_y;
     this.absolute_width;
-  
 
     this.index_zero = 1
   }
 
-  create_squares( start_x, start_y, width, length, pixel_ratio) {
+  create_squares(start_x, start_y, width, length, pixel_ratio) {
     this.pixel_ratio = pixel_ratio;
     this.size_lower = start_x;
     this.size_upper = length;
@@ -68,7 +66,6 @@ class Square_matrix {
     this.distance_left_x = this.size_lower;
     this.distance_top_y = this.size_lower;
 
-    //column
     //width is locally declared as width for improved performance by reducing amount of property lookups
     for (let x = start_x, runs = width; x <= runs; x++) {
       if (this.square_matrix[x] == undefined) {
@@ -101,14 +98,11 @@ class Square_matrix {
       return;
     }
 
-    // row
     for (let x = start_y, runs = length; x <= runs; x++) {
       for (let y = start_x, runs = width; y <= runs; y++) {
         const color_x = x * this.pixel_ratio;
         const color_y = y * this.pixel_ratio;
         const color_n = this.custom_variable * this.pixel_ratio
-
-
 
         const hue = Function( `return ${this.hue_expression.replace(/X/g, color_x).replace(/Y/g, color_y).replace(/N/g, color_n)}` )();
         const saturation = Math.abs( ((100 + Function( `return + ${this.saturation_expression.replace(/X/g, color_x).replace(/Y/g, color_y).replace(/N/g, color_n)}` )()) % 200) - 100 );
@@ -127,7 +121,7 @@ class Square_matrix {
       }
     }
   }
-  //TODO arguments should be same for new/draw_pixels
+
   draw_squares(start_x, end_x, start_y, end_y) {
     this.absolute_width = this.canvas.width / (end_x - start_x + this.index_zero);
     for (let x = start_x, runs = end_x; x <= runs; x++) {
@@ -202,12 +196,13 @@ class Square_matrix {
     //zooms if a perfect square is makeable, guiding box fits the canvas
     if ( 0 < canvas_current_x && canvas_current_x < this.canvas.width && 0 < canvas_current_y && canvas_current_y < this.canvas.height ) {
      
+      //finds the area which will be zoomed in on.
       //start is the smallest value, while end is the largest, opposite for y value because it is distance from top of canvas
-      const start_x = Math.min( ~~(cursor_start_x / this.absolute_width) + this.distance_left_x, ~~((cursor_start_x + zoom_area.width) / this.absolute_width) + this.distance_left_x );
-      const end_x = Math.max( ~~(cursor_start_x / this.absolute_width) + this.distance_left_x, ~~((cursor_start_x + zoom_area.width) / this.absolute_width) + this.distance_left_x );
+      const start_x = Math.min( (~~(cursor_start_x / this.absolute_width) + this.distance_left_x) , (~~((cursor_start_x + zoom_area.width) / this.absolute_width) + this.distance_left_x) );
+      const end_x = Math.max(   (~~(cursor_start_x / this.absolute_width) + this.distance_left_x) , (~~((cursor_start_x + zoom_area.width) / this.absolute_width) + this.distance_left_x) );
 
-      const start_y = Math.min( ~~(cursor_start_y / this.absolute_width) + this.distance_top_y, ~~((cursor_start_y + zoom_area.height) / this.absolute_width) + this.distance_top_y );
-      let end_y = Math.max( ~~(cursor_start_y / this.absolute_width) + this.distance_top_y, ~~((cursor_start_y + zoom_area.height) / this.absolute_width) + this.distance_top_y );
+      const start_y = Math.min( (~~(cursor_start_y / this.absolute_width) + this.distance_top_y) , (~~((cursor_start_y + zoom_area.height) / this.absolute_width) + this.distance_top_y) );
+      let end_y = Math.max(     (~~(cursor_start_y / this.absolute_width) + this.distance_top_y) , (~~((cursor_start_y + zoom_area.height) / this.absolute_width) + this.distance_top_y) );
 
       //results in better zooming...
       if (end_y + 1 <= this.size_upper){

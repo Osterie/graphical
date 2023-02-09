@@ -87,3 +87,8 @@ function get_cursor_position(canvas, event) {
   //finds the absolute coordinates clicked, given as distence from top left.
   return [event.offsetX, event.offsetY];
 }
+
+function update_image(canvas, img){
+  dataURL = canvas.toDataURL();
+  img.src = dataURL;
+}
