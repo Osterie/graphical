@@ -4,6 +4,7 @@
 <head>
 
 	<meta charset="utf-8" />
+
 	<title> Graphical representation of coordinates </title>
 	<link rel="stylesheet" type="text/css" href="style.css" />
 
@@ -41,7 +42,7 @@
 
 			<div id = "variable_container" class = "paramater_container">
 			
-				<p> Please fill all fields!</p>
+				<p> This is an optional, custom variable field, if you want a custom variable, please fill all fields!</p>
 				<p id = 'custom_variable_name'></p>
 				<p id = custom_variable_error_handler></p>
 				<input id = 'custom_variable_from' type="number" placeholder="From" value="1">
@@ -57,9 +58,11 @@
 
 		</div>
 
-		<div id = "container_canvas">
 
-			<canvas id="canvas" width="600px" height="600px"> </canvas> <br>
+		<div id = "container_canvas">
+			
+			<p> Use mouse to zoom, hold ctrl and click to unzoom </p>
+			<canvas id="canvas" width="550px" height="550px"> </canvas> <br>
 		
 		</div>
 

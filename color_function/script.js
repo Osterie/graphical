@@ -213,8 +213,8 @@ function custom_variable_handler(){
   }, 1000/custom_variable_frequency);
 }
 
-//!HUGE? TODO: use webworkers, ask chat gpt-3 for help, not viable? passing information between webworker and main script removes class
-//TODO: !Research complex plotting or whatever, make an option to change to using complex numbers?
+//!HUGE? TODO: use webworkers, not viable? passing information between webworker and main script removes class
+//TODO: !check out complex plotting or whatever, make an option to change to using complex numbers?
 
 //TODO: create a settings button where settings can be changed/toggled?
 //TODO:! add a button for the option to redraw the black background, creates very interesting patterns when the size of the pixels are < 1
