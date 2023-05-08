@@ -186,7 +186,7 @@ function custom_variable_handler(){
 
   //1 means positive direction, -1 negative
   let direction = 1
-  const custom_variable_value = custom_variable_start
+  let custom_variable_value = custom_variable_start
 
   custom_variable_interval_id = window.setInterval(function(){
 
